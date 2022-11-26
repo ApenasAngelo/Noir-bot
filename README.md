@@ -15,13 +15,11 @@ O bot está nos seus estados muito iniciais, nenhum comando é permanente até o
 
 ## Bugs
 
-Caso você decida usar o código e encontre algum bug, envie ele na aba de [Issues](https://github.com/ApenasAngelo/Discord-bot/issues). Assim, eu posso tentar resolver e você também pode usar o bot corrigido.
+Caso você decida usar o código e encontre algum bug, envie ele na aba de [Issues](https://github.com/ApenasAngelo/Noir-bot/issues). Assim, eu posso tentar resolver e você também pode usar o bot corrigido.
 
 ## Quem está fazendo esse bot?
 
-No momento, eu estou fazendo esse bot com um amigo. Nós dois nos dedicamos a ele no tempo livre entre trabalhos da faculdade, e usamos ele como projeto complementar para aprender mais. O link do perfil dele, tanto como meu vão estar embaixo.
-- [ApenasAngelo](https://github.com/ApenasAngelo)
-- [gmgbrr](https://github.com/gmgbrr)
+No momento, eu estou fazendo esse bot sozinho. Ele é apenas um projeto pessoal meu para poder reunir todos os comandos que eu considero úteis em um só. Eu faço ele no meu tempo livre e com muita calma, sem a menor necessidade de tê-lo pronto o mais rápido possível. Ele é apenas um projeto e quando estiver pronto, será usado 100% do tempo, mas enquanto isso, as alternativas que já utilizo vão continuar sendo as primárias
 
 ## O que é necessário para usar o bot?
 
