@@ -6,10 +6,10 @@ Esse projeto não tem a intenção de ser feito para uso por diversas pessoas, e
 ## Funcionalidades
 
 O Noir será um bot multi-propósito, com diversas funções:
-- Player de música para reprodução de spotify, youtube, soundcloud e outros
-- Comandos de gerenciamentos do servidor, assim como comandos de QoF
-- Comandos de entretenimento
-- Qualquer utilidade extra que eu achar necessário
+* Player de música para reprodução de spotify, youtube, soundcloud e outros
+* Comandos de gerenciamentos do servidor, assim como comandos de QoF
+* Comandos de entretenimento
+* Qualquer utilidade extra que eu achar necessário
 
 
 ## Documentação
@@ -24,7 +24,7 @@ Apesar de ser um projeto bem básico, é necessário que se tenha um conheciment
 
 Siga os seguintes passos:
 * Baixe/clone o repositório
-    *Você pode usar `git clone` ou Download zip no botão Code no topo da página
+  *Você pode usar `git clone` ou Download zip no botão Code no topo da página
 * Crie uma aplicação no [Developer Portal do Discord](https://discord.com/developers/applications)
 * Siga os passos padrão para convidar o seu bot para o servidor
 
