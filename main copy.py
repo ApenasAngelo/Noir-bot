@@ -1,3 +1,4 @@
+#   discord.py | python-dotenv | yt_dlp | PyNaCl | asyncio | Wavelink | 
 import os
 from dotenv import load_dotenv
 
@@ -5,10 +6,12 @@ import discord as dc
 from discord.ext import commands
 from discord.utils import get
 
+import urllib.parse, urllib.request, re
+import yt_dlp
+import asyncio
 import wavelink as wl
 from wavelink.ext import spotify
 import datetime
-import asyncio
 
 load_dotenv()
 class Bot(commands.Bot):
@@ -29,13 +32,9 @@ class Bot(commands.Bot):
         )
 
         node: wl.Node = wl.Node(uri=os.getenv('wl.URI'), password=os.getenv('wl.PASSWORD'))
-        await wl.NodePool.connect(client=self, nodes=[node], spotify=sc)
+        await wl.NodePool.connect(client=self, nodes=[node])
 
 bot = Bot()
-
-
-
-
 
 #COMANDOS DO SISTEMA
 @bot.command()
@@ -46,21 +45,23 @@ async def botoff (ctx):
     else:
         await ctx.send ('Você não tem permissão para isso!')
 
-
-
-
-
 #COMANDOS GERAIS
 @bot.command()
 async def love (ctx):
     await ctx.send ('Eu te amo! <3')
 
 
-
-
-
 #COMANDOS DE MÚSICA
+ytdl_options = {
+    'skip_download': True,
+    'extract_flat': True,
+    'youtube_include_dash_manifest': False,
+    'youtube_skip_dash_manifest': True,
+    'force_generic_extractor': True,
+    }
+
 song_list = []
+
 
 @bot.command(aliases = ['p'])
 async def play (ctx, *, search):
@@ -79,17 +80,20 @@ async def play (ctx, *, search):
         await ctx.send('O bot já está sendo utilizado em outro canal.')
         return
 
-    track = await process_song_search(ctx, search)
-    if not track:
+
+    tracks = await wl.YouTubeTrack.search(search)
+    if not tracks:
+        await ctx.send(f'Nenhum resultado encontrado com: `{search}`')
         return
 
-    await vc.queue.put_wait(track)
+    track = tracks[0]
 
     if not vc.is_playing():
-        await vc.play(vc.queue.get())
+        await vc.play(track)
+    else:
+        await vc.queue.put_wait(track)
 
-    info = get_music_info(track)
-    song_list.append(info)
+    info = get_music_info(search)
     song_embed = create_music_embed(info, ctx.message.author)
     await ctx.send(embed=song_embed)
 
@@ -218,7 +222,7 @@ async def skip(ctx):
         await ctx.send('Não tem nada tocando...')
     
 @bot.command()
-async def seek(ctx, time:int):
+async def seek(ctx, time: int):
     if ctx.author.voice is None:
         await ctx.send ('Você não está em um canal de voz!')
         return None
@@ -236,101 +240,53 @@ async def seek(ctx, time:int):
 
 @bot.command(aliases = ['q'])
 async def queue(ctx):
-    vc: wl.Player = ctx.voice_client
-    
-    formatted_queue = ""
+    await ctx.send (song_list)
 
-    for index, song in enumerate(song_list):
-        if index == 0 and vc.is_playing():
-            formatted_queue += f"**{index+1} - [{song['title']}]({song['url']}) ({song['duration']}) (Música Atual)**"
-        else:
-            formatted_queue += f"**{index+1} -** [{song['title']}]({song['url']}) ({song['duration']})"
-
-        if index < len(song_list) - 1:
-            formatted_queue += "\n"
-        
-    embed = dc.Embed(title="Músicas na fila", description=formatted_queue, color=000000, timestamp=datetime.datetime.now())
-    await ctx.send(embed=embed)
-
-@bot.command(aliases = ['np'])
-async def nowplaying (ctx):
-    vc: wl.Player = ctx.voice_client
-
-    if not vc.is_playing():
-        await ctx.send("Não tem nada tocando...")
-    else:
-        await ctx.send(vc.current())
-    
-
-
-
-
+@bot.command()
+async def teste(ctx):
+    await ctx.send (ctx.voice_client.channel.id)
+    await ctx.send (ctx.author.voice.channel.id)
 
 #FUNÇÕES AUXILIARES
-async def process_song_search(ctx, search:str):
-    if "open.spotify.com" in search:
-        decoded = spotify.decode_url(search)
-        if not decoded or decoded['type'] is not spotify.SpotifySearchType.track:
-            await ctx.send('Só links de músicas do Spotify são válidos.')
-            return
-    
-        tracks: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
-        if tracks is None:
-            await ctx.send('Esse link do Spotify não é válido.')
-            return
+async def process_song_search(ctx, search):
+    tracks = await wl.YouTubeTrack.search(search)
+    if not tracks:
+        await ctx.send(f'Nenhum resultado encontrado com: `{search}`')
+        return
 
-        track: spotify.SpotifyTrack = tracks[0]
-        return track
-    else:
-        tracks = await wl.YouTubeTrack.search(search)
-        if not tracks:
-            await ctx.send(f'Nenhum resultado encontrado com: `{search}`')
-            return
-
-        track = tracks[0]
-        return track
+    track = tracks[0]
+    return track
 
 def create_music_embed(info, author):
-    title = info['title']
-    thumbnail = info['thumbnail']
-    duration = info['duration']
-    url = info['url']
+    title = info.get('title', None)
+    thumbnail = info.get('thumbnail', None)
+    duration = info.get('duration', None)
+
+    duration_minutes = int(duration / 60)
+    duration_seconds = int(duration % 60)
+    duration_formatted = "{:d}:{:02d}".format(duration_minutes, duration_seconds)
+
+    url = info['webpage_url']
     
-    embed = dc.Embed(title="Adicionado a fila de reprodução:", description=f"[{title}]({url})", color=000000, timestamp=datetime.datetime.now())
+    embed = dc.Embed(description="", color=000000, timestamp=datetime.datetime.now())
     embed.set_thumbnail(url=thumbnail)
-    embed.add_field(name="Duração:", value=duration, inline=False)
+    embed.add_field(name="Adicionado a fila de reprodução:", value=f"[{title}]({url})", inline=False)
+    embed.add_field(name="Duração:", value=duration_formatted, inline=False)
     embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
 
     return embed
 
-def get_music_info(track):
-    total_seconds = track.length / 1000  # Convert milliseconds to seconds
-
-    hours = int(total_seconds // 3600)
-    minutes = int((total_seconds % 3600) // 60)
-    seconds = int(total_seconds % 60)
-
-    if hours > 0:
-        duration_formatted = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
-    else:
-        duration_formatted = "{:02d}:{:02d}".format(minutes, seconds)
-
-    if isinstance(track, spotify.SpotifyTrack):
-        info = {
-            'track': track,
-            'title': f"{track.artists[0]} - {track.name}",
-            'thumbnail': track.images[0],
-            'duration': duration_formatted,
-            'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
-        }
-    else:
-        info = {
-            'track': track,
-            'title': track.title,
-            'thumbnail': track.thumbnail,
-            'duration': duration_formatted,
-            'url': track.uri
-        }
+def get_music_info(search):
+    with yt_dlp.YoutubeDL(ytdl_options) as ydl:
+        if "http" in search:
+            url = search
+            info = ydl.extract_info(url, download=False)
+        else:
+            query_string = urllib.parse.urlencode({'search_query': search})
+            htm_content = urllib.request.urlopen('http://www.youtube.com/results?' + query_string)
+            search_results = re.findall(r'/watch\?v=(.{11})', htm_content.read().decode())
+            url = ('http://www.youtube.com/watch?v=' + search_results[0])
+            info = ydl.extract_info(url, download=False)
 
     return info
 

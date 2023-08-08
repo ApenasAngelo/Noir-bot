@@ -1,2 +1,5 @@
 .env
 Discord bot.code-workspace
+/discord_bot
+/__pycache__
+/Lavalink
