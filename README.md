@@ -36,7 +36,7 @@ Para o resto da configuração, siga os seguintes passos:
 * Substitua no arquivo [application_EXAMPLE.yml](https://github.com/ApenasAngelo/Noir-bot/blob/master/Lavalink/application_EXAMPLE.yml) a mesma senha escolhida no arquivo `.env` no campo password.
 * Renomeie o arquivo `application_EXAMPLE.yml` removendo o _EXAMPLE dele.
 * Crie uma aplicação no [Developer Portal do Discord](https://discord.com/developers/applications)
-* Com o link `https://discord.com/oauth2/authorize?&client_id=YOUR_APPLICATION_ID_HERE&scope=bot+applications.commands&permissions=PERMISSIONS`, substitua `YOUR_APPLICATION_ID_HERE` e `PERMISSIONS` pelos dados adquiridos no Developer Portal e convide o seu bot para o servidor desejado
+* Com o link https://discord.com/oauth2/authorize?&client_id=YOUR_APPLICATION_ID_HERE&scope=bot+applications.commands&permissions=PERMISSIONS, substitua `YOUR_APPLICATION_ID_HERE` e `PERMISSIONS` pelos dados adquiridos no Developer Portal e convide o seu bot para o servidor desejado
 
 # Como iniciar
 
