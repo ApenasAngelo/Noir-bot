@@ -25,14 +25,18 @@ Apesar de ser um projeto bem básico, é necessário que se tenha um conheciment
 Siga os seguintes passos:
 * Baixe/clone o repositório
   *Você pode usar `git clone` ou Download zip no botão Code no topo da página
-* Crie uma aplicação no [Developer Portal do Discord](https://discord.com/developers/applications)
-* Siga os passos padrão para convidar o seu bot para o servidor
 
 ## Como configurar
 
-Primeiro é necessário que se siga o tutorional no repositório do [Wavelink](https://github.com/PythonistaGuild/Wavelink) para criar o node do Lavalink. É bem auto-explicativo e fácil de se seguir
+Ler o tutorial no repositório do [Wavelink](https://github.com/PythonistaGuild/Wavelink) para criar o node do Lavalink pode ser útil e bem auto-explicativo e fácil de se seguir, mas o repositório já vem com uma pasta pré pronta para facilitar.
 
-Para facilitar algumas configurações e esconder informações importantes, é utilizado .env para algumas variáveis. Por questão de segurança, ela não é enviada para o repositório, então é necessário que o usuário crie. Para isso criei um arquivo [example.env](https://github.com/ApenasAngelo/Noir-bot/blob/master/example.env) que deve ser renomeado para apenas .env e ter seus valores alterados para que o bot funcione de maneira correta. As explicações de cada uma das variáveis está dentro do próprio [example.env](https://github.com/ApenasAngelo/Noir-bot/blob/master/example.env) e é fácil de configurar.
+Para facilitar algumas configurações e esconder informações importantes, é utilizado .env para algumas variáveis. Por questão de segurança, ela não é enviada para o repositório, então é necessário que o usuário crie. Para isso criei um arquivo [example.env](https://github.com/ApenasAngelo/Noir-bot/blob/master/example.env) que deve ser renomeado para apenas .env e ter seus valores alterados para que o bot funcione de maneira correta. As explicações de cada uma das variáveis está dentro do próprio `example.env` e é fácil de configurar.
+
+Para o resto da configuração, siga os seguintes passos:
+* Substitua no arquivo [application_EXAMPLE.yml](https://github.com/ApenasAngelo/Noir-bot/blob/master/Lavalink/application_EXAMPLE.yml) a mesma senha escolhida no arquivo `.env` no campo password.
+* Renomeie o arquivo `application_EXAMPLE.yml` removendo o _EXAMPLE dele.
+* Crie uma aplicação no [Developer Portal do Discord](https://discord.com/developers/applications)
+* Com o link `https://discord.com/oauth2/authorize?&client_id=YOUR_APPLICATION_ID_HERE&scope=bot+applications.commands&permissions=PERMISSIONS`, substitua `YOUR_APPLICATION_ID_HERE` e `PERMISSIONS` pelos dados adquiridos no Developer Portal e convide o seu bot para o servidor desejado
 
 # Como iniciar
 
@@ -43,7 +47,13 @@ Primeiramente é necessário instalar todos requisitos. Para isso, instale todos
 python -m pip install -r requirements.txt
 ```
 
-Depois de instalar e inicializar o servidor do Wavelink, basta iniciar com o comando:
+Depois incialize o servidor do Lavalink. Para isso, vá até o diretório aonde se encontra `Lavalink.jar` e abra o terminal. Digite o comando:
+
+```
+java -jar Lavalink.jar
+```
+
+Agora só falta iniciar o bot. Para isso, vá até o diretório aonde se encontra `main.py` e abra o terminal. Digite o comando:
 
 ```
 python main.py
