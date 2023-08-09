@@ -16,7 +16,7 @@
 
 ## GERAL
 * Modificar o bot para funcionar com diversos servidores
-  * [ ] Criar db para armazenar valores a respeito de servidores
-  * [ ] Adicionar o servidor na db assim que o bot entrar
-  * [ ] Remover o servidor na db assim que o bot sair ou o servidor for deletado
-  * [ ] Adicionar o canal de música selecionado com o comando `-configmusic` pelo usuário
+  * [X] Criar db para armazenar valores a respeito de servidores
+  * [X] Adicionar o servidor na db assim que o bot entrar
+  * [X] Remover o servidor na db assim que o bot sair ou o servidor for deletado
+  * [X] Adicionar o canal de música selecionado com o comando `-configmusic` pelo usuário

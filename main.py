@@ -18,7 +18,7 @@ class Bot(commands.Bot):
     def __init__(self) -> None:
         intents = dc.Intents.all()
         intents.message_content = True
-        activity = dc.Activity(type=dc.ActivityType.listening, name="voze...")
+        activity = dc.Activity(type=dc.ActivityType.listening, name="vozes...")
         status = dc.Status.do_not_disturb
 
         super().__init__(intents=intents, command_prefix=os.getenv('prefix'), activity=activity, status=status)
