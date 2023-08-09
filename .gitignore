@@ -4,4 +4,4 @@ Discord bot.code-workspace
 /__pycache__
 /Lavalink/application.yml
 /Lavalink/logs
-noir_database.db
+noir_database.sqlite
