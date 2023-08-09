@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import discord as dc
 from discord.ext import commands
 from discord.utils import get
+import logging
 
 import wavelink as wl
 from wavelink.ext import spotify
@@ -18,6 +19,7 @@ class Bot(commands.Bot):
     def __init__(self) -> None:
         intents = dc.Intents.all()
         intents.message_content = True
+
         activity = dc.Activity(type=dc.ActivityType.listening, name="vozes...")
         status = dc.Status.do_not_disturb
 
@@ -157,7 +159,7 @@ async def love(ctx):
     await send_embed_message(ctx, 'Eu te amo! <3')
 
 
-@bot.command()
+@bot.command(aliases = ['limpar', 'clear'])
 async def purge(ctx, limit:int=10):
 
     if ctx.author.guild_permissions.administrator:
@@ -180,6 +182,18 @@ guild_queue_list = {}
 
 
 @bot.event
+async def on_wavelink_track_start(payload):
+    vc: wl.Player = payload.player
+
+    if not vc.queue.loop:
+        channel_id = read_music_channel_id(vc.guild)
+        music_channel = bot.get_channel(channel_id)
+        
+        np_embed = create_np_embed(vc.guild)
+        await music_channel.send(embed=np_embed)
+
+
+@bot.event
 async def on_wavelink_track_end(payload):
 
     vc: wl.Player = payload.player
@@ -194,13 +208,6 @@ async def on_wavelink_track_end(payload):
         track = vc.queue.get()
         await vc.play(track)
 
-        if not vc.queue.loop:
-            channel_id = read_music_channel_id(vc.guild)
-            music_channel = bot.get_channel(channel_id)
-
-            np_embed = create_np_embed(vc.guild)
-            await music_channel.send(embed=np_embed)
-
 
 @bot.command(aliases = ['p'])
 async def play(ctx, *, search:str=None):
@@ -214,7 +221,6 @@ async def play(ctx, *, search:str=None):
         await send_embed_message(ctx, 'O canal de música não foi configurado. Digite `-configmusic` para configurar.')
         return
 
-    music_channel = bot.get_channel(channel_id)
     if ctx.author.voice is None:
         await send_embed_message(ctx, 'Você não está em um canal de voz!')
         return
@@ -234,22 +240,33 @@ async def play(ctx, *, search:str=None):
     if not track:
         return
 
-    info = get_music_info(track)
+    if isinstance(track, wl.tracks.YouTubePlaylist):
+        if f'{ctx.guild.id}' not in guild_queue_list:
+            guild_queue_list[f'{ctx.guild.id}'] = []
 
-    if f'{ctx.guild.id}' not in guild_queue_list:
-        guild_queue_list[f'{ctx.guild.id}'] = []
+        for song in track.tracks:
+            info = get_music_info(song)
+            guild_queue_list[f'{ctx.guild.id}'].append(info)
+            vc.queue.put(song)
 
-    guild_queue_list[f'{ctx.guild.id}'].append(info)
+        addqueue_embed = create_addqueue_pl_embed(track.name, track, ctx.message.author)
+        await ctx.send(embed=addqueue_embed)
 
-    addqueue_embed = create_addqueue_embed(info, ctx.message.author)
-    await ctx.send(embed=addqueue_embed)
+    else:
+        info = get_music_info(track)
 
-    vc.queue.put(track)
+        if f'{ctx.guild.id}' not in guild_queue_list:
+            guild_queue_list[f'{ctx.guild.id}'] = []
+
+        guild_queue_list[f'{ctx.guild.id}'].append(info)
+
+        addqueue_embed = create_addqueue_embed(info, ctx.message.author)
+        await ctx.send(embed=addqueue_embed)
+
+        vc.queue.put(track)
 
     if not vc.is_playing():
         await vc.play(vc.queue.get())
-        np_embed = create_np_embed(ctx.guild)
-        await music_channel.send(embed=np_embed)
 
 
 @bot.command()
@@ -380,7 +397,7 @@ async def skip(ctx):
     vc: wl.Player = ctx.voice_client
 
     if vc.is_playing():
-        await vc.stop()
+        await vc.stop(force=True)
     else:
         await send_embed_message(ctx, 'Não tem nada tocando...')
 
@@ -497,6 +514,14 @@ async def process_song_search(ctx, search:str):
 
         track: spotify.SpotifyTrack = tracks[0]
         return track
+    elif ("youtube.com" in search or "youtu.be" in search) and ("?list=" in search or "&list=" in search):
+        tracks = await wl.YouTubePlaylist.search(search)
+        if not tracks:
+            await send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
+            return
+        
+        return tracks
+
     else:
         tracks = await wl.YouTubeTrack.search(search)
         if not tracks:
@@ -543,6 +568,15 @@ def create_addqueue_embed(info, author):
 
     return embed
 
+def create_addqueue_pl_embed(title, playlist, author):
+
+    track_quantity = len(playlist.tracks)
+    
+    embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Playlist **{title}** com **{track_quantity}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
+    embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
+
+    return embed
+
 
 def get_music_info(track):
 
@@ -582,16 +616,10 @@ def get_music_info(track):
 
 #COMANDOS DE DEBUG
 @bot.command()
-async def teste(ctx):
-
-    channel_id = read_music_channel_id(ctx.guild)
-    if id is None:
-        await ctx.send('Não há canal de música definido para esse servidor.')
-    else:
-        await ctx.send(channel_id)
-
-    music_channel = bot.get_channel(channel_id)
-    await music_channel.send('Teste')
+async def teste(ctx, search):
+    tracks= await process_song_search(ctx, search)
+    await ctx.send(type(tracks))
+    
 
 
 @bot.command()

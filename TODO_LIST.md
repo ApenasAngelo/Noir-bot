@@ -6,7 +6,10 @@
 * [ ] Loop para a música no momento ou para a fila inteira
 * [X] Now Playing para ver informações da música atual 
 * [ ] Um evento para remover o bot automaticamente se estiver sozinho em uma Voice Call
-* [ ] Implementar `-configmusic` para o bot saber aonde enviar as logs de música
+* [X] Implementar `-configmusic` para o bot saber aonde enviar as logs de música
+* [X] Implementar playlists do Youtube
+* [ ] Adicionar autoplay
+* [ ] Adicionar `-playnext` para adicionar uma música na fila na próxima posição
 
 ## Moderação
 * [X] Limpar mensagens de um canal de texto 
