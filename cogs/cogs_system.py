@@ -56,7 +56,7 @@ class System(commands.Cog):
             await self.bot.close()
         else:
             await auxiliar.send_embed_message(ctx, 'Você não tem permissão para isso!')
-    
+
 
     @commands.command()
     async def reloadcogs(self, ctx):
