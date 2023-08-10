@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import discord as dc
 from discord.ext import commands
 from discord.utils import get
+from cogwatch import watch
 
 import wavelink as wl
 from wavelink.ext import spotify
@@ -12,6 +13,7 @@ from wavelink.ext import spotify
 import sqlite3
 
 from globals import guild_queue_list, conn, cursor
+from cogs.cogs_auxiliar import Auxiliar
 
 #INICIALIZAÇÃO DO BOT
 load_dotenv()
@@ -26,9 +28,9 @@ class Bot(commands.Bot):
 
         super().__init__(intents=intents, command_prefix=os.getenv('prefix'), activity=activity, status=status)
 
+    @watch(path='cogs', preload=True)
     async def on_ready(self) -> None:
         print('O bot está ON!'.format(bot))
-        await load()
 
     async def setup_hook(self) -> None:
         sc = spotify.SpotifyClient(
@@ -42,7 +44,8 @@ class Bot(commands.Bot):
 bot = Bot()
 
 
-async def load():
+async def loadcogs():
+
     for filename in os.listdir('./cogs'):
         if filename.startswith('cogs_'):
             await bot.load_extension(f'cogs.{filename[:-3]}')

@@ -51,6 +51,13 @@ class Music(commands.Cog):
             track = vc.queue.get()
             await vc.play(track)
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if after.channel is None and member==self.bot.user:
+            guild_queue_list[f'{before.channel.guild.id}'].clear()
+
+            print("Bot has been Disconnected")
+
 
     @commands.command(aliases = ['p'])
     async def play(self, ctx, *, search:str=None):
@@ -86,6 +93,7 @@ class Music(commands.Cog):
             return
 
         if isinstance(track, wl.tracks.YouTubePlaylist):
+            await ctx.send (type(track))
             if f'{ctx.guild.id}' not in guild_queue_list:
                 guild_queue_list[f'{ctx.guild.id}'] = []
 
@@ -94,10 +102,39 @@ class Music(commands.Cog):
                 guild_queue_list[f'{ctx.guild.id}'].append(info)
                 vc.queue.put(song)
 
-            addqueue_embed = auxiliar.create_addqueue_pl_embed(track.name, track, ctx.message.author)
+            addqueue_embed = auxiliar.create_addqueue_pl_embed(track.name, len(track.tracks), ctx.message.author)
             await ctx.send(embed=addqueue_embed)
 
+        elif isinstance(track, tuple):
+            if track[0] == 'album':
+                await ctx.send (type(track))
+                if f'{ctx.guild.id}' not in guild_queue_list:
+                    guild_queue_list[f'{ctx.guild.id}'] = []
+
+                for song in track[1]:
+                    info = auxiliar.get_music_info(song)
+                    guild_queue_list[f'{ctx.guild.id}'].append(info)
+                    vc.queue.put(song)
+
+                addqueue_embed = auxiliar.create_addqueue_spotify_album_embed(track[1][0].album, len(track[1]), ctx.message.author)
+                await ctx.send(embed=addqueue_embed)
+
+            elif track[0] == 'playlist':
+                await ctx.send (type(track))
+                if f'{ctx.guild.id}' not in guild_queue_list:
+                    guild_queue_list[f'{ctx.guild.id}'] = []
+
+                for song in track[1]:
+                    info = auxiliar.get_music_info(song)
+                    guild_queue_list[f'{ctx.guild.id}'].append(info)
+                    vc.queue.put(song)
+
+                addqueue_embed = auxiliar.create_addqueue_pl_embed(track[1][0].album, len(track[1]), ctx.message.author)
+                await ctx.send(embed=addqueue_embed)
+
+
         else:
+            await ctx.send (type(track))
             info = auxiliar.get_music_info(track)
 
             if f'{ctx.guild.id}' not in guild_queue_list:
@@ -172,10 +209,10 @@ class Music(commands.Cog):
         
         vc: wl.Player = ctx.voice_client
 
-        await vc.stop()
+        guild_queue_list[f'{ctx.guild.id}'].clear()
+        vc.queue.clear()
         await vc.disconnect()
         await auxiliar.send_embed_message(ctx, 'A música parou.')
-        guild_queue_list[f'{ctx.guild.id}'].clear()
 
 
     @commands.command()
@@ -248,7 +285,7 @@ class Music(commands.Cog):
         vc: wl.Player = ctx.voice_client
 
         if vc.is_playing():
-            await vc.stop(force=True)
+            await vc.seek(vc.current.length)
         else:
             await auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
 

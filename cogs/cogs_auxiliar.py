@@ -22,25 +22,53 @@ class Auxiliar(commands.Cog):
     async def process_song_search(self, ctx, search:str):
 
         if "open.spotify.com" in search:
-            decoded = spotify.decode_url(search)
-            if not decoded or decoded['type'] is not spotify.SpotifySearchType.track:
+            decoded: spotify.SpotifyDecodePayload = spotify.decode_url(search)
+
+            if decoded is not None and decoded.type is not spotify.SpotifySearchType.unusable:
+
+                if decoded.type is spotify.SpotifySearchType.album:
+                    album: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
+                    if album is None:
+                        await self.send_embed_message(ctx, 'Esse álbum do Spotify não é válido.')
+                        return
+
+                    return 'album', album
+
+
+                elif decoded.type is spotify.SpotifySearchType.playlist:
+                    playlist: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
+                    if playlist is None:
+                        await self.send_embed_message(ctx, 'Essa playlist do Spotify não é válida.')
+                        return
+
+                    return 'playlist', playlist
+
+
+                if decoded.type is spotify.SpotifySearchType.track:
+                    tracks: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
+                    if tracks is None:
+                        await self.send_embed_message(ctx, 'Esse link do Spotify não é válido.')
+                        return
+
+                    track: spotify.SpotifyTrack = tracks[0]
+                    return track
+
+
+            else:
                 await self.send_embed_message(ctx, 'Só links de músicas do Spotify são válidos.')
+                
+                await ctx.send(decoded)
+                await ctx.send(type(decoded))
                 return
         
-            tracks: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
-            if tracks is None:
-                await self.send_embed_message(ctx, 'Esse link do Spotify não é válido.')
-                return
-
-            track: spotify.SpotifyTrack = tracks[0]
-            return track
-        elif ("youtube.com" in search or "youtu.be" in search) and ("?list=" in search or "&list=" in search):
-            tracks = await wl.YouTubePlaylist.search(search)
-            if not tracks:
-                await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
-                return
-            
-            return tracks
+        elif "youtube.com" in search or "youtu.be" in search:
+            if "?list=" in search or "&list=" in search:
+                tracks = await wl.YouTubePlaylist.search(search)
+                if not tracks:
+                    await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
+                    return
+                
+                return tracks
 
         else:
             tracks = await wl.YouTubeTrack.search(search)
@@ -48,8 +76,8 @@ class Auxiliar(commands.Cog):
                 await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
                 return
 
-            track = tracks[0]
-            return track
+        track = tracks[0]
+        return track
 
 
     async def send_embed_message(self, ctx, message:str = None, deletetime:float = None):
@@ -88,11 +116,18 @@ class Auxiliar(commands.Cog):
 
         return embed
 
-    def create_addqueue_pl_embed(self, title, playlist, author):
 
-        track_quantity = len(playlist.tracks)
-        
-        embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Playlist **{title}** com **{track_quantity}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
+    def create_addqueue_pl_embed(self, title, length, author):
+
+        embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Playlist **{title}** com **{length}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
+        embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
+
+        return embed
+
+
+    def create_addqueue_spotify_album_embed(self, title, length, author):
+
+        embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Álbum **{title}** com **{length}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
         embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
 
         return embed

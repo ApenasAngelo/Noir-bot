@@ -10,12 +10,15 @@
 * [X] Implementar playlists do Youtube
 * [ ] Adicionar autoplay
 * [ ] Adicionar `-playnext` para adicionar uma música na fila na próxima posição
+* [ ] Bot sempre estar ensurdecido quando no canal de voz por questões de privacidade
+* [X] Implementar playlists do Spotify  |No momento não é possivel checar o nome da playlist
+* [X] Implementar albuns do Spotify     |Pode precisar de mais testes, mas nada demonstra erros
 
 ## Moderação
 * [X] Limpar mensagens de um canal de texto 
 
 ## Bugs
-* [ ] Evento para quando o bot for desconectado forçado, sair do canal (evitar bugs de fila)
+* [X] Evento para quando o bot for desconectado forçado, restaurar estado inicial (evitar bugs de fila)
 
 ## GERAL
 * Modificar o bot para funcionar com diversos servidores
@@ -23,3 +26,6 @@
   * [X] Adicionar o servidor na db assim que o bot entrar
   * [X] Remover o servidor na db assim que o bot sair ou o servidor for deletado
   * [X] Adicionar o canal de música selecionado com o comando `-configmusic` pelo usuário
+
+* [X] Transição para modularização cogs
+* [ ] Converter comandos prefixados para comandos hibridos
