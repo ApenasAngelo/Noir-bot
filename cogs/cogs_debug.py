@@ -21,19 +21,24 @@ class Debug(commands.Cog):
 
     @commands.command()
     async def teste(self, ctx, search):
-
-        auxiliar = Auxiliar(self.bot)
-        tracks= await auxiliar.process_song_search(ctx, search)
-        await ctx.send(type(tracks))
+        if str(ctx.author.id) == os.getenv('MyUserID'):
+            tracks= await auxiliar.process_song_search(ctx, search)
+            await ctx.send(type(tracks))
+        else:
+            auxiliar = Auxiliar(self.bot)
+            await auxiliar.send_embed_message(ctx, 'Você não tem permissão para isso!')
         
 
 
     @commands.command()
     async def tq(self, ctx):
-
-        vc: wl.Player = ctx.voice_client
-        await ctx.send(str(vc.queue))
-        await ctx.send(len(vc.queue))
+        if str(ctx.author.id) == os.getenv('MyUserID'):
+            vc: wl.Player = ctx.voice_client
+            await ctx.send(str(vc.queue))
+            await ctx.send(len(vc.queue))
+        else:
+            auxiliar = Auxiliar(self.bot)
+            await auxiliar.send_embed_message(ctx, 'Você não tem permissão para isso!')
 
 
 async def setup(bot):
