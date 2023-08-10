@@ -56,9 +56,6 @@ class Auxiliar(commands.Cog):
 
             else:
                 await self.send_embed_message(ctx, 'Só links de músicas do Spotify são válidos.')
-                
-                await ctx.send(decoded)
-                await ctx.send(type(decoded))
                 return
         
         elif "youtube.com" in search or "youtu.be" in search:
@@ -128,6 +125,14 @@ class Auxiliar(commands.Cog):
     def create_addqueue_spotify_album_embed(self, title, length, author):
 
         embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Álbum **{title}** com **{length}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
+        embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
+
+        return embed
+
+
+    def create_addqueue_spotify_pl_embed(self, length, author):
+
+        embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Playlist do Spotify com **{length}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
         embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
 
         return embed

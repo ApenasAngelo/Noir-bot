@@ -38,7 +38,7 @@ class Bot(commands.Bot):
             client_secret=os.getenv('spotify.ClientSecret')
         )
 
-        node: wl.Node = wl.Node(uri=os.getenv('wl.URI'), password=os.getenv('wl.PASSWORD'))
+        node: wl.Node = wl.Node(uri=os.getenv('wl.URI'), password=os.getenv('wl.PASSWORD'), secure=True)
         await wl.NodePool.connect(client=self, nodes=[node], spotify=sc)
 
 bot = Bot()

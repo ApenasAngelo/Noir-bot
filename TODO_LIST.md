@@ -19,6 +19,7 @@
 
 ## Bugs
 * [X] Evento para quando o bot for desconectado forçado, restaurar estado inicial (evitar bugs de fila)
+* [ ] Resolver quando a fila de reprodução é muito grande e o embed não pode ser enviado
 
 ## GERAL
 * Modificar o bot para funcionar com diversos servidores

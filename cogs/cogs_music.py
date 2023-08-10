@@ -93,7 +93,6 @@ class Music(commands.Cog):
             return
 
         if isinstance(track, wl.tracks.YouTubePlaylist):
-            await ctx.send (type(track))
             if f'{ctx.guild.id}' not in guild_queue_list:
                 guild_queue_list[f'{ctx.guild.id}'] = []
 
@@ -107,7 +106,6 @@ class Music(commands.Cog):
 
         elif isinstance(track, tuple):
             if track[0] == 'album':
-                await ctx.send (type(track))
                 if f'{ctx.guild.id}' not in guild_queue_list:
                     guild_queue_list[f'{ctx.guild.id}'] = []
 
@@ -120,7 +118,6 @@ class Music(commands.Cog):
                 await ctx.send(embed=addqueue_embed)
 
             elif track[0] == 'playlist':
-                await ctx.send (type(track))
                 if f'{ctx.guild.id}' not in guild_queue_list:
                     guild_queue_list[f'{ctx.guild.id}'] = []
 
@@ -129,7 +126,7 @@ class Music(commands.Cog):
                     guild_queue_list[f'{ctx.guild.id}'].append(info)
                     vc.queue.put(song)
 
-                addqueue_embed = auxiliar.create_addqueue_pl_embed(track[1][0].album, len(track[1]), ctx.message.author)
+                addqueue_embed = auxiliar.create_addqueue_spotify_pl_embed(len(track[1]), ctx.message.author)
                 await ctx.send(embed=addqueue_embed)
 
 
