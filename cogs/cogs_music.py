@@ -1,17 +1,13 @@
-import os
 import datetime
-from dotenv import load_dotenv
+import random
 
 import discord as dc
 from discord.ext import commands
-from discord.utils import get
 
 import wavelink as wl
 from wavelink.ext import spotify
 
-import sqlite3
-
-from globals import guild_queue_list, conn, cursor
+from globals import guild_queue_list
 from cogs.cogs_database import Database
 from cogs.cogs_auxiliar import Auxiliar
 
@@ -121,17 +117,15 @@ class Music(commands.Cog):
                 if f'{ctx.guild.id}' not in guild_queue_list:
                     guild_queue_list[f'{ctx.guild.id}'] = []
 
-                for song in track[1]:
+                for song in track[2]:
                     info = auxiliar.get_music_info(song)
                     guild_queue_list[f'{ctx.guild.id}'].append(info)
                     vc.queue.put(song)
 
-                addqueue_embed = auxiliar.create_addqueue_spotify_pl_embed(len(track[1]), ctx.message.author)
+                addqueue_embed = auxiliar.create_addqueue_spotify_pl_embed(track[1], len(track[2]), ctx.message.author)
                 await ctx.send(embed=addqueue_embed)
 
-
         else:
-            await ctx.send (type(track))
             info = auxiliar.get_music_info(track)
 
             if f'{ctx.guild.id}' not in guild_queue_list:
@@ -283,6 +277,35 @@ class Music(commands.Cog):
 
         if vc.is_playing():
             await vc.seek(vc.current.length)
+            await auxiliar.send_embed_message(ctx, f'{ctx.author.mention} pulou a música.')
+        else:
+            await auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
+
+
+    @commands.command(aliases=['goto'])
+    async def skipto(self, ctx, *, index: int):
+
+        auxiliar = Auxiliar(self.bot)
+        if ctx.author.voice is None:
+            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            return None
+        
+        if ctx.voice_client is None:
+            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            return None
+        
+        elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
+            await auxiliar.send_embed_message(ctx, 'Você não pode pular a música com o bot em outro canal de voz.')
+        
+        vc: wl.Player = ctx.voice_client
+
+        if vc.is_playing():
+            for x in range(index-2):
+                del vc.queue[0]
+                guild_queue_list[f'{ctx.guild.id}'].pop(0)
+
+            await vc.seek(vc.current.length)
+            await auxiliar.send_embed_message(ctx, f'{ctx.author.mention} pulou a música.')
         else:
             await auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
 
@@ -379,8 +402,38 @@ class Music(commands.Cog):
         if not vc.is_playing():
             await auxiliar.send_embed_message(ctx, "Não tem nada tocando...")
         else:
-            np_embed = auxiliar.create_np_embed(ctx.guild)
+            np_embed = auxiliar.create_np_embed(ctx.guild, vc.position)
             await ctx.send(embed=np_embed)
+
+
+    @commands.command(aliases = ['s'])
+    async def shuffle(self, ctx):
+
+        auxiliar = Auxiliar(self.bot)
+        if ctx.author.voice is None:
+            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            return None
+        
+        if ctx.voice_client is None:
+            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            return None
+        
+        elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
+            await auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal de voz.')
+
+        vc: wl.Player = ctx.voice_client
+        
+        np_song = guild_queue_list[f'{ctx.guild.id}'][0]
+        guild_queue_list[f'{ctx.guild.id}'].pop(0)
+        random.shuffle(guild_queue_list[f'{ctx.guild.id}'])
+        vc.queue.clear()
+
+        for song in guild_queue_list[f'{ctx.guild.id}']:
+            vc.queue(song['track'])
+        guild_queue_list[f'{ctx.guild.id}'].insert(0, np_song)
+
+        await auxiliar.send_embed_message(ctx, 'A fila de reprodução foi embaralhada.')
+
 
 
 async def setup(bot):

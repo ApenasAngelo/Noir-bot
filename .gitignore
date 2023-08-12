@@ -6,3 +6,6 @@ Discord bot.code-workspace
 /Lavalink/logs
 noir_database.sqlite
 /cogs/__pycache__
+.vscode
+/Lavalink
+discloud.config

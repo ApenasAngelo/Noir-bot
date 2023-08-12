@@ -1,8 +1,9 @@
 ## Música
 * [X] Queue para tocar músicas em sequência 
 * [X] Remover uma música da queue 
-* [X] Skip para pular a música atual 
-* [ ] Shuffle para embaralhar as músicas na queue
+* [X] Skip para pular a música atual
+* [X] Skip para pular para uma música da fila de reprodução `-goto` ou `-skipto`
+* [X] Shuffle para embaralhar as músicas na queue
 * [ ] Loop para a música no momento ou para a fila inteira
 * [X] Now Playing para ver informações da música atual 
 * [ ] Um evento para remover o bot automaticamente se estiver sozinho em uma Voice Call

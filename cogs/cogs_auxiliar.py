@@ -1,17 +1,13 @@
-import os
 import datetime
-from dotenv import load_dotenv
 
 import discord as dc
 from discord.ext import commands
-from discord.utils import get
 
 import wavelink as wl
 from wavelink.ext import spotify
+import spotipy
 
-import sqlite3
-
-from globals import guild_queue_list, conn, cursor
+from globals import guild_queue_list, spotipy
 
 
 class Auxiliar(commands.Cog):
@@ -40,27 +36,29 @@ class Auxiliar(commands.Cog):
                     if playlist is None:
                         await self.send_embed_message(ctx, 'Essa playlist do Spotify não é válida.')
                         return
+                    
+                    playlist_id = search[search.find("/playlist/") + len("/playlist/"):][:22]
+                    playlist_details = spotipy.playlist(playlist_id)
 
-                    return 'playlist', playlist
+                    return 'playlist', playlist_details['name'], playlist
 
 
                 if decoded.type is spotify.SpotifySearchType.track:
-                    tracks: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
-                    if tracks is None:
+                    song: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.convert(ctx, search)
+                    if song is None:
                         await self.send_embed_message(ctx, 'Esse link do Spotify não é válido.')
                         return
 
-                    track: spotify.SpotifyTrack = tracks[0]
-                    return track
+                    return song
 
 
             else:
-                await self.send_embed_message(ctx, 'Só links de músicas do Spotify são válidos.')
+                await self.send_embed_message(ctx, 'Este link do Spotify é inválido.')
                 return
         
         elif "youtube.com" in search or "youtu.be" in search:
             if "?list=" in search or "&list=" in search:
-                tracks = await wl.YouTubePlaylist.search(search)
+                tracks = await wl.YouTubePlaylist.convert(ctx, search)
                 if not tracks:
                     await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
                     return
@@ -68,13 +66,12 @@ class Auxiliar(commands.Cog):
                 return tracks
 
         else:
-            tracks = await wl.YouTubeTrack.search(search)
-            if not tracks:
+            track = await wl.YouTubeTrack.convert(ctx, search)
+            if not track:
                 await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
                 return
 
-        track = tracks[0]
-        return track
+            return track
 
 
     async def send_embed_message(self, ctx, message:str = None, deletetime:float = None):
@@ -83,16 +80,31 @@ class Auxiliar(commands.Cog):
         await ctx.send(embed=msg_embed, delete_after=deletetime)
 
 
-    def create_np_embed(self, guild):
+    def create_np_embed(self, guild, position:int = None):
 
         title = guild_queue_list[f'{guild.id}'][0]['title']
         thumbnail = guild_queue_list[f'{guild.id}'][0]['thumbnail']
         duration = guild_queue_list[f'{guild.id}'][0]['duration']
         url = guild_queue_list[f'{guild.id}'][0]['url']
-        
+
         embed = dc.Embed(title=":musical_note: • Reproduzindo:", description=f"[{title}]({url})", color=0x5aacea, timestamp=datetime.datetime.now())
         embed.set_thumbnail(url=thumbnail)
-        embed.add_field(name="Duração:", value=duration, inline=False)
+
+        if position:
+            total_seconds = position / 1000
+
+            hours = int(total_seconds // 3600)
+            minutes = int((total_seconds % 3600) // 60)
+            seconds = int(total_seconds % 60)
+
+            if hours > 0:
+                current_time = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+            else:
+                current_time = "{:02d}:{:02d}".format(minutes, seconds)
+
+            embed.add_field(name="Duração:", value=f'{current_time} - {duration}', inline=False)
+        else:
+            embed.add_field(name="Duração:", value=f'{duration}', inline=False)
 
         if len(guild_queue_list[f'{guild.id}']) > 1:
             embed.set_footer(text=f"Próxima: {guild_queue_list[f'{guild.id}'][1]['title']}")
@@ -130,9 +142,9 @@ class Auxiliar(commands.Cog):
         return embed
 
 
-    def create_addqueue_spotify_pl_embed(self, length, author):
+    def create_addqueue_spotify_pl_embed(self, title, length, author):
 
-        embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Playlist do Spotify com **{length}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
+        embed = dc.Embed(description=f":white_check_mark: **• Adicionado a fila >** Playlist **{title}** com **{length}** músicas", color=0x6fa64f, timestamp=datetime.datetime.now())
         embed.set_footer(text="Adicionado por "+format(author.display_name), icon_url=author.avatar)
 
         return embed
@@ -154,7 +166,7 @@ class Auxiliar(commands.Cog):
         if isinstance(track, spotify.SpotifyTrack):
             info = {
                 'track': track,
-                'title': f"{track.artists[0]} - {track.name}",
+                'title': f"{track.artists[0]} - {track.title}",
                 'thumbnail': track.images[0],
                 'duration': duration_formatted,
                 'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
