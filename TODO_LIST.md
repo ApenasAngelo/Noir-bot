@@ -12,7 +12,7 @@
 * [ ] Adicionar autoplay
 * [ ] Adicionar `-playnext` para adicionar uma música na fila na próxima posição
 * [ ] Bot sempre estar ensurdecido quando no canal de voz por questões de privacidade
-* [X] Implementar playlists do Spotify  |No momento não é possivel checar o nome da playlist
+* [X] Implementar playlists do Spotify
 * [X] Implementar albuns do Spotify     |Pode precisar de mais testes, mas nada demonstra erros
 
 ## Moderação
