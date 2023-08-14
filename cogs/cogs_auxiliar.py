@@ -44,12 +44,12 @@ class Auxiliar(commands.Cog):
 
 
                 if decoded.type is spotify.SpotifySearchType.track:
-                    song: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.convert(ctx, search)
-                    if song is None:
+                    songs: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
+                    if songs is None:
                         await self.send_embed_message(ctx, 'Esse link do Spotify não é válido.')
                         return
 
-                    return song
+                    return songs[0]
 
 
             else:
@@ -65,13 +65,22 @@ class Auxiliar(commands.Cog):
                 
                 return tracks
 
-        else:
-            track = await wl.YouTubeTrack.convert(ctx, search)
-            if not track:
-                await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
-                return
+            elif "youtu.be" in search:
+                    song_ID = search[-11:]
+                    tracks = await wl.YouTubeTrack.search(f'https://www.youtube.com/watch?v={song_ID}')
+                    if not tracks:
+                        await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
+                        return
 
-            return track
+                    return tracks[0]
+        
+            else:
+                tracks = await wl.YouTubeTrack.search(search)
+                if not tracks:
+                    await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
+                    return
+
+                return tracks[0]
 
 
     async def send_embed_message(self, ctx, message:str = None, deletetime:float = None):
