@@ -48,11 +48,19 @@ class Music(commands.Cog):
             await vc.play(track)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        if after.channel is None and member==self.bot.user:
+    async def on_voice_state_update(self, member=dc.Member, before=dc.VoiceState, after=dc.VoiceState):
+
+        if member==self.bot.user and after.channel is None:
             guild_queue_list[f'{before.channel.guild.id}'].clear()
 
-            print("Bot has been Disconnected")
+            print("Queue has been cleared")
+        
+        elif member is not self.bot.user and before.channel and not after.channel:
+            if self.bot.user in before.channel.members and len(before.channel.members) == 1:
+                vc: wl.Player = member.guild.voice_client
+                await vc.disconnect()
+                guild_queue_list[f'{before.channel.guild.id}'].clear()
+                print("Bot has been Disconnected")
 
 
     @commands.command(aliases = ['p'])
@@ -180,6 +188,8 @@ class Music(commands.Cog):
         
         vc: wl.Player = ctx.voice_client
         await vc.disconnect()
+        print("Bot has been Disconnected")
+        
 
 
     @commands.command()
@@ -203,6 +213,7 @@ class Music(commands.Cog):
         guild_queue_list[f'{ctx.guild.id}'].clear()
         vc.queue.clear()
         await vc.disconnect()
+        print("Bot has been Disconnected")
         await auxiliar.send_embed_message(ctx, 'A música parou.')
 
 

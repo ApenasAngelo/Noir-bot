@@ -74,13 +74,13 @@ class Auxiliar(commands.Cog):
 
                     return tracks[0]
         
-            else:
-                tracks = await wl.YouTubeTrack.search(search)
-                if not tracks:
-                    await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
-                    return
-
-                return tracks[0]
+        else:
+            tracks = await wl.YouTubeTrack.search(search)
+            if not tracks:
+                await self.send_embed_message(ctx, f'Nenhum resultado encontrado com: `{search}`')
+                return
+            
+            return tracks[0]
 
 
     async def send_embed_message(self, ctx, message:str = None, deletetime:float = None):

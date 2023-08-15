@@ -6,14 +6,14 @@
 * [X] Shuffle para embaralhar as músicas na queue
 * [ ] Loop para a música no momento ou para a fila inteira
 * [X] Now Playing para ver informações da música atual 
-* [ ] Um evento para remover o bot automaticamente se estiver sozinho em uma Voice Call
+* [X] Um evento para remover o bot automaticamente se estiver sozinho em uma Voice Call
 * [X] Implementar `-configmusic` para o bot saber aonde enviar as logs de música
 * [X] Implementar playlists do Youtube
 * [ ] Adicionar autoplay
 * [ ] Adicionar `-playnext` para adicionar uma música na fila na próxima posição
 * [ ] Bot sempre estar ensurdecido quando no canal de voz por questões de privacidade
 * [X] Implementar playlists do Spotify
-* [X] Implementar albuns do Spotify     |Pode precisar de mais testes, mas nada demonstra erros
+* [X] Implementar albuns do Spotify
 
 ## Moderação
 * [X] Limpar mensagens de um canal de texto 
