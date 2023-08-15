@@ -1,5 +1,6 @@
 import datetime
 import random
+import asyncio
 
 import discord as dc
 from discord.ext import commands
@@ -7,7 +8,7 @@ from discord.ext import commands
 import wavelink as wl
 from wavelink.ext import spotify
 
-from globals import guild_queue_list
+from globals import guild_queue_list, last_queue_message
 from cogs.cogs_database import Database
 from cogs.cogs_auxiliar import Auxiliar
 
@@ -42,6 +43,7 @@ class Music(commands.Cog):
             return await vc.play(track)
         
         guild_queue_list[f'{vc.guild.id}'].pop(0)
+        await last_queue_message.clear_reactions()
 
         if len(vc.queue) > 0:
             track = vc.queue.get()
@@ -340,33 +342,96 @@ class Music(commands.Cog):
         await vc.seek(time*1000)
 
 
-    @commands.command(aliases = ['q'])
+    @commands.command(aliases=['q'])
     async def queue(self, ctx):
-
+        global last_queue_message
         auxiliar = Auxiliar(self.bot)
         if ctx.voice_client is None:
             await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
-        
-        if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
-            return None
-        
+
         vc: wl.Player = ctx.voice_client
-        
+
+        formatted_queue = ""
+        queue_list = guild_queue_list[f'{ctx.guild.id}']
+        page_size = 10
+        page_num = 0
+        num_pages = (len(queue_list) + page_size - 1) // page_size
+
+        start_index = page_num * page_size
+        end_index = min(start_index + page_size, len(queue_list))
         formatted_queue = ""
 
-        for index, song in enumerate(guild_queue_list[f'{ctx.guild.id}']):
-            if index == 0 and vc.is_playing():
-                formatted_queue += f"**{index+1} - [{song['title']}]({song['url']}) ({song['duration']}) (Música Atual)**"
+        for index, song in enumerate(queue_list[start_index:end_index]):
+            if index == 0 and page_num == 0 and vc.is_playing():
+                formatted_queue += f"**{start_index+index+1} - [{song['title']}]({song['url']}) ({song['duration']}) (Música Atual)**"
             else:
-                formatted_queue += f"**{index+1} -** [{song['title']}]({song['url']}) ({song['duration']})"
+                formatted_queue += f"**{start_index+index+1} -** [{song['title']}]({song['url']}) ({song['duration']})"
 
-            if index < len(guild_queue_list[f'{ctx.guild.id}']) - 1:
+            if index < len(queue_list) - 1:
                 formatted_queue += "\n"
-            
+
+            if len(formatted_queue) > 4096:
+                formatted_queue = formatted_queue[:4093] + "..."
+                break
+
         embed = dc.Embed(title="Músicas na fila", description=formatted_queue, color=000000, timestamp=datetime.datetime.now())
-        await ctx.send(embed=embed)
+        embed.set_footer(text=f"Página {page_num+1}/{num_pages}")
+        new_queue_message = await ctx.send(embed=embed)
+
+        if last_queue_message is not None:
+            await last_queue_message.clear_reactions()
+
+        last_queue_message = new_queue_message
+
+        if num_pages > 1:
+            await last_queue_message.add_reaction("⬅️")
+            await last_queue_message.add_reaction("➡️")
+
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡️"]
+
+            page_counts = [0] * num_pages
+
+            while True:
+                try:
+                    reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+                except asyncio.TimeoutError:
+                    await last_queue_message.clear_reactions()
+                    break
+                else:
+                    if str(reaction.emoji) == "⬅️":
+                        page_counts[page_num] += 1
+                        page_num = max(0, page_num - 1)
+                    elif str(reaction.emoji) == "➡️":
+                        page_counts[page_num] += 1
+                        page_num = min(num_pages - 1, page_num + 1)
+
+                    start_index = page_num * page_size
+                    end_index = min(start_index + page_size, len(queue_list))
+                    formatted_queue = ""
+
+                    for index, song in enumerate(queue_list[start_index:end_index]):
+                        if index == 0 and page_num == 0 and vc.is_playing():
+                            formatted_queue += f"**{start_index+index+1} - [{song['title']}]({song['url']}) ({song['duration']}) (Música Atual)**"
+                        else:
+                            formatted_queue += f"**{start_index+index+1} -** [{song['title']}]({song['url']}) ({song['duration']})"
+
+                        if index < len(queue_list) - 1:
+                            formatted_queue += "\n"
+
+                        if len(formatted_queue) > 4096:
+                            formatted_queue = formatted_queue[:4093] + "..."
+                            break
+
+                    embed.description = formatted_queue
+                    embed.set_footer(text=f"Página {page_num+1}/{num_pages}")
+                    await last_queue_message.edit(embed=embed)
+
+                    if page_counts[page_num] > 0:
+                        await reaction.remove(user)
+
+                    page_counts[page_num] += 1
 
 
     @commands.command(aliases = ['rq'])

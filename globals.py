@@ -11,6 +11,8 @@ cursor = conn.cursor()
 
 guild_queue_list = {}
 
+last_queue_message = None
+
 
 load_dotenv()
 auth_manager = SpotifyClientCredentials(

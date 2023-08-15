@@ -173,13 +173,22 @@ class Auxiliar(commands.Cog):
             duration_formatted = "{:02d}:{:02d}".format(minutes, seconds)
 
         if isinstance(track, spotify.SpotifyTrack):
-            info = {
-                'track': track,
-                'title': f"{track.artists[0]} - {track.title}",
-                'thumbnail': track.images[0],
-                'duration': duration_formatted,
-                'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
-            }
+            if track.images:
+                info = {
+                    'track': track,
+                    'title': f"{track.artists[0]} - {track.title}",
+                    'thumbnail': track.images[0],
+                    'duration': duration_formatted,
+                    'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
+                }
+            else:
+                info = {
+                    'track': track,
+                    'title': f"{track.artists[0]} - {track.title}",
+                    'thumbnail': None,
+                    'duration': duration_formatted,
+                    'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
+                }
         else:
             info = {
                 'track': track,
