@@ -1,6 +1,7 @@
 import datetime
 import random
 import asyncio
+import inspect
 
 import discord as dc
 from discord.ext import commands
@@ -16,6 +17,7 @@ from cogs.cogs_auxiliar import Auxiliar
 class Music(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.wait_for_tasks = []
 
 
     @commands.Cog.listener()
@@ -43,11 +45,13 @@ class Music(commands.Cog):
             return await vc.play(track)
         
         guild_queue_list[f'{vc.guild.id}'].pop(0)
-        await last_queue_message.clear_reactions()
+        if last_queue_message:
+            await last_queue_message.clear_reactions()
 
         if len(vc.queue) > 0:
             track = vc.queue.get()
             await vc.play(track)
+
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member=dc.Member, before=dc.VoiceState, after=dc.VoiceState):
@@ -344,11 +348,19 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
+
         global last_queue_message
         auxiliar = Auxiliar(self.bot)
         if ctx.voice_client is None:
             await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
+
+        try:
+            for coro in self.wait_for_tasks:
+                if coro is not None and inspect.isawaitable(coro):
+                    coro.cancel()
+        except Exception as e :
+            print(e)
 
         vc: wl.Player = ctx.voice_client
 
@@ -389,13 +401,16 @@ class Music(commands.Cog):
             await last_queue_message.add_reaction("➡️")
 
             def check(reaction, user):
-                return user == ctx.author and str(reaction.emoji) in ["⬅️", "➡️"]
+                return user != self.bot.user and str(reaction.emoji) in ["⬅️", "➡️"]
 
             page_counts = [0] * num_pages
 
             while True:
                 try:
-                    reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+                    loop = asyncio.get_event_loop()
+                    task = loop.create_task(self.bot.wait_for('reaction_add', timeout=10.0, check=check))
+                    self.wait_for_tasks.append(task)
+                    reaction, user = await task
                 except asyncio.TimeoutError:
                     await last_queue_message.clear_reactions()
                     break
@@ -428,10 +443,9 @@ class Music(commands.Cog):
                     embed.set_footer(text=f"Página {page_num+1}/{num_pages}")
                     await last_queue_message.edit(embed=embed)
 
-                    if page_counts[page_num] > 0:
-                        await reaction.remove(user)
-
+                    await reaction.remove(user)
                     page_counts[page_num] += 1
+                    print(f"page_num: {page_num}, num_pages: {num_pages}, page_counts: {page_counts}")
 
 
     @commands.command(aliases = ['rq'])
@@ -509,7 +523,6 @@ class Music(commands.Cog):
         guild_queue_list[f'{ctx.guild.id}'].insert(0, np_song)
 
         await auxiliar.send_embed_message(ctx, 'A fila de reprodução foi embaralhada.')
-
 
 
 async def setup(bot):
