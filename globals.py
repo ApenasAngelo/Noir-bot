@@ -3,6 +3,8 @@ import sqlite3
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
+import lyricsgenius
+
 import os
 from dotenv import load_dotenv
 
@@ -20,3 +22,5 @@ auth_manager = SpotifyClientCredentials(
     client_secret=os.getenv('spotify.ClientSecret')
     )
 spotipy = spotipy.Spotify(auth_manager=auth_manager)
+
+genius = lyricsgenius.Genius(os.getenv('genius.TOKEN'))

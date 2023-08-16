@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import discord as dc
 from discord.ext import commands
@@ -86,6 +87,11 @@ class Auxiliar(commands.Cog):
     async def send_embed_message(self, ctx, message:str = None, deletetime:float = None):
 
         msg_embed = dc.Embed(description=message, color=000000)
+        await ctx.send(embed=msg_embed, delete_after=deletetime)
+
+    async def send_embed_lyrics_message(self, ctx, title:str = None, message:str = None, deletetime:float = None):
+
+        msg_embed = dc.Embed(title=title, description=message, color=000000)
         await ctx.send(embed=msg_embed, delete_after=deletetime)
 
 
@@ -177,6 +183,8 @@ class Auxiliar(commands.Cog):
                 info = {
                     'track': track,
                     'title': f"{track.artists[0]} - {track.title}",
+                    'name': f"{track.title}",
+                    'artist': f"{track.artists[0]}",
                     'thumbnail': track.images[0],
                     'duration': duration_formatted,
                     'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
@@ -185,6 +193,8 @@ class Auxiliar(commands.Cog):
                 info = {
                     'track': track,
                     'title': f"{track.artists[0]} - {track.title}",
+                    'name': f"{track.title}",
+                    'artist': f"{track.artists[0]}",
                     'thumbnail': None,
                     'duration': duration_formatted,
                     'url':  f"https://open.spotify.com/intl-pt/track/{track.id}"
@@ -199,6 +209,19 @@ class Auxiliar(commands.Cog):
             }
 
         return info
+
+
+    def clean_lyrics(self, s):
+
+        found = re.search(r'^.*?\bLyrics\b\n', s, flags=re.IGNORECASE)
+        if found:
+            s = s[found.end():]
+
+        found = re.findall(r'\d*Embed\b', s, flags=re.IGNORECASE)
+        for f in found:
+            s = s[:s.index(f)] + s[s.index(f) + len(f):]
+
+        return s
 
 
 async def setup(bot):
