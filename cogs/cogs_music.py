@@ -9,7 +9,7 @@ from discord.ext import commands
 import wavelink as wl
 from wavelink.ext import spotify
 
-from globals import guild_queue_list, last_queue_message
+from globals import guild_queue_list, last_queue_message, genius
 from cogs.cogs_database import Database
 from cogs.cogs_auxiliar import Auxiliar
 
@@ -56,6 +56,8 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member=dc.Member, before=dc.VoiceState, after=dc.VoiceState):
 
+        vc: wl.Player = member.guild.voice_client
+
         if member==self.bot.user and after.channel is None:
             guild_queue_list[f'{before.channel.guild.id}'].clear()
 
@@ -63,7 +65,6 @@ class Music(commands.Cog):
         
         elif member is not self.bot.user and before.channel and not after.channel:
             if self.bot.user in before.channel.members and len(before.channel.members) == 1:
-                vc: wl.Player = member.guild.voice_client
                 await vc.disconnect()
                 guild_queue_list[f'{before.channel.guild.id}'].clear()
                 print("Bot has been Disconnected")
@@ -89,7 +90,7 @@ class Music(commands.Cog):
 
         if ctx.voice_client is None:
             channel = ctx.author.voice.channel
-            vc: wl.Player = await channel.connect(cls=wl.Player)
+            vc: wl.Player = await channel.connect(cls=wl.Player, self_deaf=True)
 
         elif ctx.voice_client.channel.id == ctx.author.voice.channel.id:
             vc: wl.Player = ctx.voice_client
@@ -366,7 +367,7 @@ class Music(commands.Cog):
 
         formatted_queue = ""
         queue_list = guild_queue_list[f'{ctx.guild.id}']
-        page_size = 10
+        page_size = 15
         page_num = 0
         num_pages = (len(queue_list) + page_size - 1) // page_size
 
@@ -408,7 +409,7 @@ class Music(commands.Cog):
             while True:
                 try:
                     loop = asyncio.get_event_loop()
-                    task = loop.create_task(self.bot.wait_for('reaction_add', timeout=10.0, check=check))
+                    task = loop.create_task(self.bot.wait_for('reaction_add', timeout=15.0, check=check))
                     self.wait_for_tasks.append(task)
                     reaction, user = await task
                 except asyncio.TimeoutError:
@@ -445,7 +446,6 @@ class Music(commands.Cog):
 
                     await reaction.remove(user)
                     page_counts[page_num] += 1
-                    print(f"page_num: {page_num}, num_pages: {num_pages}, page_counts: {page_counts}")
 
 
     @commands.command(aliases = ['rq'])
@@ -483,6 +483,7 @@ class Music(commands.Cog):
     async def nowplaying(self, ctx):
 
         auxiliar = Auxiliar(self.bot)
+
         if ctx.voice_client is None:
             await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
@@ -524,6 +525,138 @@ class Music(commands.Cog):
 
         await auxiliar.send_embed_message(ctx, 'A fila de reprodução foi embaralhada.')
 
+    @commands.command(aliases = ['pnext'])
+    async def playnext(self, ctx, *, search:str=None):
+
+        auxiliar = Auxiliar(self.bot)
+        database = Database(self.bot)
+        if search is None:
+            await auxiliar.send_embed_message(ctx, 'Digite o nome de uma música, link do Youtube ou o link do Spotify.')
+            return
+
+        channel_id = database.read_music_channel_id(ctx.guild)
+        if channel_id is None:
+            await auxiliar.send_embed_message(ctx, 'O canal de música não foi configurado. Digite `-configmusic` para configurar.')
+            return
+
+        if ctx.author.voice is None:
+            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            return
+
+        if ctx.voice_client is None:
+            channel = ctx.author.voice.channel
+            vc: wl.Player = await channel.connect(cls=wl.Player, self_deaf=True)
+
+        elif ctx.voice_client.channel.id == ctx.author.voice.channel.id:
+            vc: wl.Player = ctx.voice_client
+
+        elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
+            await auxiliar.send_embed_message(ctx, 'O bot já está sendo utilizado em outro canal.')
+            return
+
+        track = await auxiliar.process_song_search(ctx, search)
+        if not track:
+            return
+
+        if isinstance(track, wl.tracks.YouTubePlaylist):
+            if f'{ctx.guild.id}' not in guild_queue_list:
+                guild_queue_list[f'{ctx.guild.id}'] = []
+
+            if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
+                for song in track.tracks:
+                    info = auxiliar.get_music_info(song)
+                    guild_queue_list[f'{ctx.guild.id}'].append(info)
+                    vc.queue.put(song)
+            else:
+                for song in reversed(track.tracks):
+                    info = auxiliar.get_music_info(song)
+                    guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
+                    vc.queue.put_at_front(song)
+
+            addqueue_embed = auxiliar.create_addqueue_pl_embed(track.name, len(track.tracks), ctx.message.author)
+            await ctx.send(embed=addqueue_embed)
+
+        elif isinstance(track, tuple):
+            if track[0] == 'album':
+                if f'{ctx.guild.id}' not in guild_queue_list:
+                    guild_queue_list[f'{ctx.guild.id}'] = []
+
+                if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
+                    for song in track[1]:
+                        info = auxiliar.get_music_info(song)
+                        guild_queue_list[f'{ctx.guild.id}'].append(info)
+                        vc.queue.put(song)
+                else:
+                    for song in reversed(track[1]):
+                        info = auxiliar.get_music_info(song)
+                        guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
+                        vc.queue.put_at_front(song)
+
+                addqueue_embed = auxiliar.create_addqueue_spotify_album_embed(track[1][0].album, len(track[1]), ctx.message.author)
+                await ctx.send(embed=addqueue_embed)
+
+            elif track[0] == 'playlist':
+                if f'{ctx.guild.id}' not in guild_queue_list:
+                    guild_queue_list[f'{ctx.guild.id}'] = []
+
+                if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
+                    for song in track[2]:
+                        info = auxiliar.get_music_info(song)
+                        guild_queue_list[f'{ctx.guild.id}'].append(info)
+                        vc.queue.put(song)
+                else:
+                    for song in reversed(track[2]):
+                        info = auxiliar.get_music_info(song)
+                        guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
+                        vc.queue.put_at_front(song)
+
+                addqueue_embed = auxiliar.create_addqueue_spotify_pl_embed(track[1], len(track[2]), ctx.message.author)
+                await ctx.send(embed=addqueue_embed)
+
+        else:
+            info = auxiliar.get_music_info(track)
+
+            if f'{ctx.guild.id}' not in guild_queue_list:
+                guild_queue_list[f'{ctx.guild.id}'] = []
+
+            if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
+                guild_queue_list[f'{ctx.guild.id}'].append(info)
+                vc.queue.put(track)
+            else:
+                guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
+                vc.queue.put_at_front(track)
+
+            addqueue_embed = auxiliar.create_addqueue_embed(info, ctx.message.author)
+            await ctx.send(embed=addqueue_embed)
+
+        if not vc.is_playing():
+            await vc.play(vc.queue.get())
+
+
+    @commands.command()
+    async def lyrics(self, ctx):
+
+        auxiliar = Auxiliar(self.bot)
+
+        if ctx.voice_client is None:
+            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            return None
+        
+        vc: wl.Player = ctx.voice_client
+
+        if not vc.is_playing():
+            await auxiliar.send_embed_message(ctx, "Não tem nada tocando...")
+        else:
+            if isinstance(guild_queue_list[f'{ctx.guild.id}'][0]['track'], spotify.SpotifyTrack):
+
+                lyrics = genius.search_song(title=guild_queue_list[f'{ctx.guild.id}'][0]['name'],
+                                             artist=guild_queue_list[f'{ctx.guild.id}'][0]['artist']).lyrics
+
+                lyrics = auxiliar.clean_lyrics(lyrics)
+
+                await auxiliar.send_embed_lyrics_message(ctx, guild_queue_list[f'{ctx.guild.id}'][0]['title'], lyrics)
+            else:
+                await auxiliar.send_embed_message(ctx, "No momento apenas músicas do Spotify são compatíveis com essa função.")
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
