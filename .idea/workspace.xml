@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="95f7ac72-55ed-40c3-9ac6-f63c2c0adff3" name="Changes" comment="Git flow rework">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO_LIST.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO_LIST.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cogs/cogs_auxiliar.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_auxiliar.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cogs/cogs_database.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cogs/cogs_debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_debug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cogs/cogs_misc.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_misc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cogs/cogs_music.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_music.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cogs/cogs_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_system.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-    </list>
+    <list default="true" id="95f7ac72-55ed-40c3-9ac6-f63c2c0adff3" name="Changes" comment="Git flow rework" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -124,7 +114,7 @@
       <workItem from="1699373133763" duration="138000" />
       <workItem from="1699373398952" duration="1423000" />
       <workItem from="1699376220391" duration="168000" />
-      <workItem from="1699376397704" duration="24000" />
+      <workItem from="1699376397704" duration="70000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />
@@ -142,7 +132,15 @@
       <option name="project" value="LOCAL" />
       <updated>1699373485063</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Git flow rework">
+      <option name="closed" value="true" />
+      <created>1699376438684</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1699376438684</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
