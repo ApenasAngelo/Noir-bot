@@ -6,7 +6,7 @@ Esse projeto não tem a intenção de ser feito para uso por diversas pessoas, e
 ## Funcionalidades
 
 O Noir será um bot multi-propósito, com diversas funções:
-* Player de música para reprodução de spotify, youtube, soundcloud e outros
+* Player de música para reprodução de spotify, YouTube, soundcloud e outros
 * Comandos de gerenciamentos do servidor, assim como comandos de QoF
 * Comandos de entretenimento
 * Qualquer utilidade extra que eu achar necessário
@@ -14,7 +14,7 @@ O Noir será um bot multi-propósito, com diversas funções:
 
 ## Documentação
 
-O bot é muito experimental no momento, já que eu estou usando-o como um projeto de auto aprendizado, então tudo é muito volátil e não existe garantia de se manter na versão final. A documentação será feita quando o bot tiver uma base mais concreta.
+O bot é muito experimental no momento, já que eu estou usando-o como um projeto de autoaprendizado, então tudo é muito volátil e não existe garantia de se manter na versão final. A documentação será feita quando o bot tiver uma base mais concreta.
 
 ## Suporte
 
@@ -28,7 +28,7 @@ Siga os seguintes passos:
 
 ## Como configurar
 
-Ler o tutorial no repositório do [Wavelink](https://github.com/PythonistaGuild/Wavelink) para criar o node do Lavalink pode ser útil e bem auto-explicativo e fácil de se seguir, mas o repositório já vem com uma pasta pré pronta para facilitar.
+Ler o tutorial no repositório do [Wavelink](https://github.com/PythonistaGuild/Wavelink) para criar o node do Lavalink pode ser útil e bem autoexplicativo e fácil de se seguir, mas o repositório já vem com uma pasta pré-pronta para facilitar.
 
 Para facilitar algumas configurações e esconder informações importantes, é utilizado .env para algumas variáveis. Por questão de segurança, ela não é enviada para o repositório, então é necessário que o usuário crie. Para isso criei um arquivo [example.env](https://github.com/ApenasAngelo/Noir-bot/blob/master/example.env) que deve ser renomeado para apenas .env e ter seus valores alterados para que o bot funcione de maneira correta. As explicações de cada uma das variáveis está dentro do próprio `example.env` e é fácil de configurar.
 
@@ -41,13 +41,13 @@ Para o resto da configuração, siga os seguintes passos:
 # Como iniciar
 
 Iniciar o bot é como iniciar qualquer outro programa em python do seu terminal. Não esqueça que é necessário rodar o servidor do Wavelink.  
-Primeiramente é necessário instalar todos requisitos. Para isso, instale todos eles com o comando:
+Primeiramente é necessário instalar todos os requisitos. Para isso, instale todos eles com o comando:
 
 ```
 python -m pip install -r requirements.txt
 ```
 
-Depois incialize o servidor do Lavalink. Para isso, vá até o diretório aonde se encontra `Lavalink.jar` e abra o terminal. Digite o comando:
+Depois inicialize o servidor do Lavalink. Para isso, vá até o diretório aonde se encontra `Lavalink.jar` e abra o terminal. Digite o comando:
 
 ```
 java -jar Lavalink.jar
@@ -65,4 +65,4 @@ python main.py
 ## Bugs ou pedidos
 
 Caso você decida usar o código e encontre algum bug, envie ele na aba de [Issues](https://github.com/ApenasAngelo/Noir-bot/issues). Assim, eu posso tentar resolver e você também pode usar o bot corrigido.  
-Por favor não abra pedidos sobre coisas que estão no arquivo [TODO_LIST.md](https://github.com/ApenasAngelo/Noir-bot/blob/master/TODO_LIST.md), já que eles já estão sendo pensados e trabalhados para futura implementação.
+Por favor, não abra pedidos sobre coisas que estão no arquivo [TODO_LIST.md](https://github.com/ApenasAngelo/Noir-bot/blob/master/TODO_LIST.md), já que eles já estão sendo pensados e trabalhados para futura implementação.

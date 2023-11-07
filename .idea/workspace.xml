@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="95f7ac72-55ed-40c3-9ac6-f63c2c0adff3" name="Changes" comment="Git flow rework">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO_LIST.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO_LIST.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cogs/cogs_auxiliar.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_auxiliar.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cogs/cogs_database.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cogs/cogs_debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_debug.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cogs/cogs_misc.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_misc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cogs/cogs_music.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_music.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cogs/cogs_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/cogs/cogs_system.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Setup Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;ApenasAngelo&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="314225d8-6b3c-416a-b5cb-4b95e52e7ebb" />
+        <option name="url" value="https://github.com/ApenasAngelo/Noir-bot.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/cogs/cogs_database.py" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2VjNHtvVBgUfKzEX810YzXBrkPc" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <OptionsSetting value="false" id="Update" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/angelo/Developer Projects/Python/Noir Bot",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.15695952",
+    "project.structure.side.proportion": "0.22643678",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "show.migrate.to.gradle.popup": "false",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="95f7ac72-55ed-40c3-9ac6-f63c2c0adff3" name="Changes" comment="" />
+      <created>1695345444251</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1695345444251</updated>
+      <workItem from="1695345445276" duration="1073000" />
+      <workItem from="1695349077157" duration="2170000" />
+      <workItem from="1695439854855" duration="1271000" />
+      <workItem from="1695441396380" duration="55000" />
+      <workItem from="1695441658592" duration="75000" />
+      <workItem from="1695441737142" duration="240000" />
+      <workItem from="1695442359345" duration="657000" />
+      <workItem from="1695443026027" duration="734000" />
+      <workItem from="1695480901662" duration="1470000" />
+      <workItem from="1695482459609" duration="1019000" />
+      <workItem from="1695491676355" duration="609000" />
+      <workItem from="1695574080128" duration="32000" />
+      <workItem from="1695868996189" duration="31000" />
+      <workItem from="1695869033053" duration="706000" />
+      <workItem from="1695907209304" duration="260000" />
+      <workItem from="1696223815400" duration="33000" />
+      <workItem from="1696224355159" duration="996000" />
+      <workItem from="1696711216921" duration="330000" />
+      <workItem from="1696711667464" duration="566000" />
+      <workItem from="1696712242750" duration="665000" />
+      <workItem from="1696740565555" duration="2000" />
+      <workItem from="1696740581131" duration="236000" />
+      <workItem from="1696742894528" duration="45000" />
+      <workItem from="1699373133763" duration="138000" />
+      <workItem from="1699373398952" duration="1423000" />
+      <workItem from="1699376220391" duration="168000" />
+      <workItem from="1699376397704" duration="24000" />
+    </task>
+    <task id="LOCAL-00001" summary="update">
+      <option name="closed" value="true" />
+      <created>1696225297502</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1696225297502</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Git flow rework">
+      <option name="closed" value="true" />
+      <created>1699373485063</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1699373485063</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/../.." />
+      <path value="$PROJECT_DIR$/../../" />
+    </ignored-roots>
+    <MESSAGE value="update" />
+    <MESSAGE value="Git flow rework" />
+    <option name="LAST_COMMIT_MESSAGE" value="Git flow rework" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Noir_Bot$main.coverage" NAME="main Coverage Results" MODIFIED="1695482974036" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>

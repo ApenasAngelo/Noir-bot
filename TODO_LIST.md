@@ -24,8 +24,8 @@
 * [X] Evento para quando o bot for desconectado forçado, restaurar estado inicial (evitar bugs de fila)
 * [X] Resolver quando a fila de reprodução é muito grande e o embed não pode ser enviado
 * [X] Bug quando usados links no formato https://youtu.be/
-* [X] Bug quando certos links eram colocados (Não sei a causa pois não acionada absolutamente nenhum erro, mas resolver o bug acima também o resolveu)
-* [X] O bot para de funcionar sem motivo aparente, e só é resolvido com um reinicio
+* [X] Bug quando certos links eram colocados (Não sei a causa, pois não acionada absolutamente nenhum erro, mas resolver o bug acima também o resolveu)
+* [X] O bot para de funcionar sem motivo aparente, e só é resolvido com um reinício
 
 ## GERAL
 * Modificar o bot para funcionar com diversos servidores
