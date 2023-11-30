@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="95f7ac72-55ed-40c3-9ac6-f63c2c0adff3" name="Changes" comment="git flow rework">
+    <list default="true" id="95f7ac72-55ed-40c3-9ac6-f63c2c0adff3" name="Changes" comment="Git flow rework">
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,11 +76,11 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
+    "project.structure.last.edited": "SDKs",
     "project.structure.proportion": "0.15695952",
     "project.structure.side.proportion": "0.22643678",
     "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "settings.editor.selected.configurable": "settings.sync",
     "show.migrate.to.gradle.popup": "false",
     "vue.rearranger.settings.migration": "true"
   },
@@ -125,6 +126,8 @@
       <workItem from="1699376220391" duration="168000" />
       <workItem from="1699376397704" duration="70000" />
       <workItem from="1699377257239" duration="45000" />
+      <workItem from="1699493536056" duration="2898000" />
+      <workItem from="1701360919455" duration="661000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />
@@ -150,7 +153,15 @@
       <option name="project" value="LOCAL" />
       <updated>1699376438684</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Git flow rework">
+      <option name="closed" value="true" />
+      <created>1699378087032</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1699378087032</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -173,9 +184,9 @@
       <path value="$PROJECT_DIR$/../../" />
     </ignored-roots>
     <MESSAGE value="update" />
-    <MESSAGE value="Git flow rework" />
     <MESSAGE value="git flow rework" />
-    <option name="LAST_COMMIT_MESSAGE" value="git flow rework" />
+    <MESSAGE value="Git flow rework" />
+    <option name="LAST_COMMIT_MESSAGE" value="Git flow rework" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
