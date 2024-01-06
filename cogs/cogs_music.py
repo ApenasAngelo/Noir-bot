@@ -78,8 +78,6 @@ class Music(commands.Cog):
             await Auxiliar.send_embed_message(ctx,  'O bot já está sendo utilizado em outro canal.')
             return
 
-
-
         if ctx.invoked_with == 'pyt' or ctx.invoked_with == 'pytnext':
             tracks: wl.Search = await wl.Playable.search(search, source=wl.TrackSource.YouTube)
         else:
