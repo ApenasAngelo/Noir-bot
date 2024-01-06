@@ -6,11 +6,9 @@ import random
 import discord as dc
 import wavelink as wl
 from discord.ext import commands
-from wavelink.ext import spotify
 
 from cogs.cogs_auxiliar import Auxiliar
 from cogs.cogs_database import Database
-from globals import guild_queue_list, genius
 
 
 class Music(commands.Cog):
@@ -19,33 +17,22 @@ class Music(commands.Cog):
         self.wait_for_tasks = []
 
     @commands.Cog.listener()
-    async def on_wavelink_track_start(self, payload):
+    async def on_wavelink_track_start(self, payload: wl.TrackStartEventPayload) -> None:
 
-        auxiliar = Auxiliar(self.bot)
-        vc: wl.Player = payload.player
+        database = Database(self.bot)
+        
+        channel_id = database.read_music_channel_id(payload.player.guild)
+        music_channel = self.bot.get_channel(channel_id)
 
-        if not vc.queue.loop:
-            database = Database(self.bot)
-            channel_id = database.read_music_channel_id(vc.guild)
-            music_channel = self.bot.get_channel(channel_id)
-
-            np_embed = auxiliar.create_np_embed(vc.guild)
-            await music_channel.send(embed=np_embed)
+        np_embed = Auxiliar.create_np_embed(payload.track, payload.player.queue)
+        await music_channel.send(embed=np_embed)
 
     @commands.Cog.listener()
-    async def on_wavelink_track_end(self, payload):
-
-        vc: wl.Player = payload.player
-        track = payload.track
-
-        if vc.queue.loop:
-            return await vc.play(track)
-
-        guild_queue_list[f'{vc.guild.id}'].pop(0)
-
-        if len(vc.queue) > 0:
-            track = vc.queue.get()
-            await vc.play(track)
+    async def on_wavelink_track_end(self, payload: wl.TrackEndEventPayload) -> None:
+        
+        if payload.player:
+            if len(payload.player.queue) > 0:
+                await payload.player.play(payload.player.queue.get())
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member=dc.Member, before=dc.VoiceState, after=dc.VoiceState):
@@ -53,34 +40,31 @@ class Music(commands.Cog):
         vc: wl.Player = member.guild.voice_client
 
         if member == self.bot.user and after.channel is None:
-            guild_queue_list[f'{before.channel.guild.id}'].clear()
-
             print("Queue has been cleared")
 
         elif member is not self.bot.user and before.channel and not after.channel:
             if self.bot.user in before.channel.members and len(before.channel.members) == 1:
                 vc.queue.clear()
-                guild_queue_list[f'{before.channel.guild.id}'].clear()
                 await vc.disconnect()
                 print("Bot has been Disconnected")
 
-    @commands.command(aliases=['p'])
-    async def play(self, ctx, *, search: str = None):
+    @commands.command(aliases=['p', 'pyt', 'pnext', 'pytnext'])
+    async def play(self, ctx, *, search: str = None) -> None:
 
-        auxiliar = Auxiliar(self.bot)
         database = Database(self.bot)
+
         if search is None:
-            await auxiliar.send_embed_message(ctx, 'Digite o nome de uma música, link do Youtube ou o link do Spotify.')
+            await Auxiliar.send_embed_message(ctx,  'Digite o nome de uma música, link do Youtube ou o link do Spotify.')
             return
 
         channel_id = database.read_music_channel_id(ctx.guild)
         if channel_id is None:
-            await auxiliar.send_embed_message(ctx, 'O canal de música não foi configurado. Digite `-configmusic` para '
-                                                   'configurar.')
+            await Auxiliar.send_embed_message(ctx,  'O canal de música não foi configurado. Digite `-configmusic` para '
+                                                    'configurar.')
             return
 
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx,  'Você não está em um canal de voz!')
             return
 
         if ctx.voice_client is None:
@@ -91,72 +75,36 @@ class Music(commands.Cog):
             vc: wl.Player = ctx.voice_client
 
         else:
-            await auxiliar.send_embed_message(ctx, 'O bot já está sendo utilizado em outro canal.')
+            await Auxiliar.send_embed_message(ctx,  'O bot já está sendo utilizado em outro canal.')
             return
 
-        track = await auxiliar.process_song_search(ctx, search)
-        if not track:
-            return
 
-        if isinstance(track, wl.tracks.YouTubePlaylist):
-            if f'{ctx.guild.id}' not in guild_queue_list:
-                guild_queue_list[f'{ctx.guild.id}'] = []
 
-            for song in track.tracks:
-                info = auxiliar.get_music_info(song)
-                guild_queue_list[f'{ctx.guild.id}'].append(info)
-                vc.queue.put(song)
-
-            addqueue_embed = auxiliar.create_addqueue_pl_embed(track.name, len(track.tracks), ctx.message.author)
-            await ctx.send(embed=addqueue_embed)
-
-        elif isinstance(track, tuple):
-            if track[0] == 'album':
-                if f'{ctx.guild.id}' not in guild_queue_list:
-                    guild_queue_list[f'{ctx.guild.id}'] = []
-
-                for song in track[1]:
-                    info = auxiliar.get_music_info(song)
-                    guild_queue_list[f'{ctx.guild.id}'].append(info)
-                    vc.queue.put(song)
-
-                addqueue_embed = auxiliar.create_addqueue_spotify_album_embed(track[1][0].album, len(track[1]),
-                                                                              ctx.message.author)
-                await ctx.send(embed=addqueue_embed)
-
-            elif track[0] == 'playlist':
-                if f'{ctx.guild.id}' not in guild_queue_list:
-                    guild_queue_list[f'{ctx.guild.id}'] = []
-
-                for song in track[2]:
-                    info = auxiliar.get_music_info(song)
-                    guild_queue_list[f'{ctx.guild.id}'].append(info)
-                    vc.queue.put(song)
-
-                addqueue_embed = auxiliar.create_addqueue_spotify_pl_embed(track[1], len(track[2]), ctx.message.author)
-                await ctx.send(embed=addqueue_embed)
-
+        if ctx.invoked_with == 'pyt' or ctx.invoked_with == 'pytnext':
+            tracks: wl.Search = await wl.Playable.search(search, source=wl.TrackSource.YouTube)
         else:
-            if f'{ctx.guild.id}' not in guild_queue_list:
-                guild_queue_list[f'{ctx.guild.id}'] = []
+            tracks: wl.Search = await wl.Playable.search(search)
+        
+        if not tracks:
+            await ctx.send('Não foi possível adicionar à fila.')
+            return
 
-            info = auxiliar.get_music_info(track)
-            guild_queue_list[f'{ctx.guild.id}'].append(info)
+        if isinstance(tracks, wl.Playlist):
+            await ctx.send(embed=Auxiliar.create_addqueue_pl_embed(tracks, ctx.message.author))
+        else:
+            tracks: wl.Playable = tracks[0]
+            await ctx.send(embed=Auxiliar.create_addqueue_embed(tracks, ctx.message.author))
 
-            addqueue_embed = auxiliar.create_addqueue_embed(info, ctx.message.author)
-            await ctx.send(embed=addqueue_embed)
+        vc.queue.put(tracks)
 
-            vc.queue.put(track)
-
-        if not vc.is_playing():
+        if not vc.playing:
             await vc.play(vc.queue.get())
 
     @commands.command()
     async def join(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
@@ -164,26 +112,25 @@ class Music(commands.Cog):
             wl.Player = await channel.connect(cls=wl.Player)
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'O bot já está sendo utilizado.')
+            await Auxiliar.send_embed_message(ctx, 'O bot já está sendo utilizado.')
             return None
 
         else:
-            await auxiliar.send_embed_message(ctx, 'O bot já está no seu canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'O bot já está no seu canal de voz.')
 
     @commands.command()
     async def disconnect(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode desconectar o bot em outro canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode desconectar o bot em outro canal de voz.')
             return None
 
         vc: wl.Player = ctx.voice_client
@@ -193,141 +140,136 @@ class Music(commands.Cog):
     @commands.command()
     async def stop(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode parar a música com o bot em outro canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode parar a música com o bot em outro canal de voz.')
             return None
 
         vc: wl.Player = ctx.voice_client
 
-        guild_queue_list[f'{ctx.guild.id}'].clear()
         vc.queue.clear()
         await vc.disconnect()
-        print("Bot has been Disconnected")
-        await auxiliar.send_embed_message(ctx, 'A música parou.')
+        await Auxiliar.send_embed_message(ctx, 'A música parou.')
 
     @commands.command()
     async def pause(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode pausar a música com o bot em outro canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode pausar a música com o bot em outro canal de voz.')
             return None
 
         vc: wl.Player = ctx.voice_client
 
-        if vc.is_playing():
-            await vc.pause()
-            await auxiliar.send_embed_message(ctx, 'A música foi pausada.')
+        if vc.playing:
+            if not vc.paused:
+                await vc.pause(True)
+                await Auxiliar.send_embed_message(ctx, 'A música foi pausada.')
+            else:
+                await vc.pause(False)
+                await Auxiliar.send_embed_message(ctx, 'A música foi despausada.')
 
         else:
-            await auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
+            await Auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
 
     @commands.command()
     async def resume(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode resumir a música com o bot em outro canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode resumir a música com o bot em outro canal de voz.')
             return None
 
         vc: wl.Player = ctx.voice_client
 
-        if vc.is_paused():
-            await vc.resume()
-            await auxiliar.send_embed_message(ctx, 'A música foi resumida.')
+        if vc.paused:
+            await vc.pause(False)
+            await Auxiliar.send_embed_message(ctx, 'A música foi despausada.')
 
         else:
-            await auxiliar.send_embed_message(ctx, 'A música não está pausada...')
+            await Auxiliar.send_embed_message(ctx, 'A música não está pausada...')
 
     @commands.command()
     async def skip(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode pular a música com o bot em outro canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode pular a música com o bot em outro canal de voz.')
 
         vc: wl.Player = ctx.voice_client
 
-        if vc.is_playing():
-            await vc.seek(vc.current.length)
-            await auxiliar.send_embed_message(ctx, f'{ctx.author.mention} pulou a música.')
+        if vc.playing:
+            track = await vc.skip()
+            await Auxiliar.send_embed_message(ctx, f'a música {track.title} foi pulada por {ctx.author.mention}.')
         else:
-            await auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
+            await Auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
 
     @commands.command(aliases=['goto'])
     async def skipto(self, ctx, *, index: int):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode pular a música com o bot em outro canal de voz.')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode pular a música com o bot em outro canal de voz.')
 
         vc: wl.Player = ctx.voice_client
 
-        if vc.is_playing():
-            for x in range(index - 2):
-                del vc.queue[0]
-                guild_queue_list[f'{ctx.guild.id}'].pop(0)
+        if vc.playing:
+            for x in range(index - 1):
+                await vc.queue.delete(0)
 
-            await vc.seek(vc.current.length)
-            await auxiliar.send_embed_message(ctx, f'{ctx.author.mention} pulou a música.')
+            await vc.skip()
+            await Auxiliar.send_embed_message(ctx, f'{ctx.author.mention} pulou {index - 1} músicas.')
         else:
-            await auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
+            await Auxiliar.send_embed_message(ctx, 'Não tem nada tocando...')
 
     @commands.command()
     async def seek(self, ctx, time: int):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal '
+            await Auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal '
                                                    'de voz.')
 
         vc: wl.Player = ctx.voice_client
@@ -336,9 +278,8 @@ class Music(commands.Cog):
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         try:
@@ -350,7 +291,7 @@ class Music(commands.Cog):
 
         vc: wl.Player = ctx.voice_client
 
-        queue_list = guild_queue_list[f'{ctx.guild.id}']
+        queue_list = vc.queue
         page_size = 15
         page_num = 0
         num_pages = (len(queue_list) + page_size - 1) // page_size
@@ -359,13 +300,32 @@ class Music(commands.Cog):
         end_index = min(start_index + page_size, len(queue_list))
         formatted_queue = ""
 
-        for index, song in enumerate(queue_list[start_index:end_index]):
-            if index == 0 and page_num == 0 and vc.is_playing():
-                formatted_queue += (
-                    f"**{start_index + index + 1} - [{song['title']}]({song['url']}) ({song['duration']}) "
-                    f"(Música Atual)**")
+        for index, track in enumerate(queue_list[start_index:end_index]):
+
+            if index == 0 and page_num == 0 and vc.playing:
+                title = f"{vc.current.author} - {vc.current.title}"
+                duration = Auxiliar.format_time(vc.current.length)
+                if vc.current.source == "spotify":
+                    url = f"https://open.spotify.com/intl-pt/track/{vc.current.identifier}"
+                else:
+                    url = vc.current.uri
+                formatted_queue += f"**{start_index + index + 1} - [{title}]({url}) ({duration}) (Música Atual)**\n"
+
+                title = f"{track.author} - {track.title}"
+                duration = Auxiliar.format_time(track.length)
+                if track.source == "spotify":
+                    url = f"https://open.spotify.com/intl-pt/track/{track.identifier}"
+                else:
+                    url = track.uri
+                formatted_queue += f"**{start_index + index + 2} -** [{title}]({url}) ({duration})"
             else:
-                formatted_queue += f"**{start_index + index + 1} -** [{song['title']}]({song['url']}) ({song['duration']})"
+                title = f"{track.author} - {track.title}"
+                duration = Auxiliar.format_time(track.length)
+                if track.source == "spotify":
+                    url = f"https://open.spotify.com/intl-pt/track/{track.identifier}"
+                else:
+                    url = track.uri
+                formatted_queue += f"**{start_index + index + 2} -** [{title}]({url}) ({duration})"
 
             if index < len(queue_list) - 1:
                 formatted_queue += "\n"
@@ -411,11 +371,33 @@ class Music(commands.Cog):
                     end_index = min(start_index + page_size, len(queue_list))
                     formatted_queue = ""
 
-                    for index, song in enumerate(queue_list[start_index:end_index]):
-                        if index == 0 and page_num == 0 and vc.is_playing():
-                            formatted_queue += f"**{start_index + index + 1} - [{song['title']}]({song['url']}) ({song['duration']}) (Música Atual)**"
+                    for index, track in enumerate(queue_list[start_index:end_index]):
+
+                        if index == 0 and page_num == 0 and vc.playing:
+                            title = f"{vc.current.author} - {vc.current.title}"
+                            duration = Auxiliar.format_time(vc.current.length)
+                            if vc.current.source == "spotify":
+                                url = f"https://open.spotify.com/intl-pt/track/{vc.current.identifier}"
+                            else:
+                                url = vc.current.uri
+                            formatted_queue += f"**{start_index + index + 1} - [{title}]({url}) ({duration}) (Música Atual)**\n"
+
+                            
+                            title = f"{track.author} - {track.title}"
+                            duration = Auxiliar.format_time(track.length)
+                            if track.source == "spotify":
+                                url = f"https://open.spotify.com/intl-pt/track/{track.identifier}"
+                            else:
+                                url = track.uri
+                            formatted_queue += f"**{start_index + index + 2} -** [{title}]({url}) ({duration})"
                         else:
-                            formatted_queue += f"**{start_index + index + 1} -** [{song['title']}]({song['url']}) ({song['duration']})"
+                            title = f"{track.author} - {track.title}"
+                            duration = Auxiliar.format_time(track.length)
+                            if track.source == "spotify":
+                                url = f"https://open.spotify.com/intl-pt/track/{track.identifier}"
+                            else:
+                                url = track.uri
+                            formatted_queue += f"**{start_index + index + 2} -** [{title}]({url}) ({duration})"
 
                         if index < len(queue_list) - 1:
                             formatted_queue += "\n"
@@ -434,214 +416,68 @@ class Music(commands.Cog):
     @commands.command(aliases=['rq'])
     async def removequeue(self, ctx, position: int):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal '
+            await Auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal '
                                                    'de voz.')
 
         if position == 1:
-            await auxiliar.send_embed_message(ctx, 'Você não pode remover a música atual. Use `-skip`')
-            return
-
-        if position < 1 or position > len(guild_queue_list[f'{ctx.guild.id}']):
-            await auxiliar.send_embed_message(ctx, 'Digite uma posição válida da fila de reprodução')
+            await Auxiliar.send_embed_message(ctx, 'Você não pode remover a música atual. Use `-skip`')
             return
 
         vc: wl.Player = ctx.voice_client
-        deleted = guild_queue_list[f'{ctx.guild.id}'][position - 1]['title']
-        guild_queue_list[f'{ctx.guild.id}'].pop(position - 1)
-        del vc.queue[position - 2]
 
-        await auxiliar.send_embed_message(ctx, f"A música **{deleted}** foi removida da fila de reprodução.")
+        if position < 1 or position > len(vc.queue):
+            await Auxiliar.send_embed_message(ctx, 'Digite uma posição válida da fila de reprodução')
+            return
+
+        deleted = vc.queue[position - 2].title
+        await vc.queue.delete(position - 2)
+
+        await Auxiliar.send_embed_message(ctx, f"A música **{deleted}** foi removida da fila de reprodução.")
 
     @commands.command(aliases=['np'])
     async def nowplaying(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
-
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         vc: wl.Player = ctx.voice_client
 
-        if not vc.is_playing():
-            await auxiliar.send_embed_message(ctx, "Não tem nada tocando...")
+        if not vc.playing:
+            await Auxiliar.send_embed_message(ctx, "Não tem nada tocando...")
         else:
-            np_embed = auxiliar.create_np_embed(ctx.guild, vc.position)
+            np_embed = Auxiliar.create_np_embed(vc.current, vc.queue, vc.current.position)
             await ctx.send(embed=np_embed)
 
-    @commands.command(aliases=['s'])
+    @commands.command()
     async def shuffle(self, ctx):
 
-        auxiliar = Auxiliar(self.bot)
         if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
             return None
 
         if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
+            await Auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
             return None
 
         elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
-            await auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal '
+            await Auxiliar.send_embed_message(ctx, 'Você não pode passar o tempo da música com o bot em outro canal '
                                                    'de voz.')
 
         vc: wl.Player = ctx.voice_client
 
-        np_song = guild_queue_list[f'{ctx.guild.id}'][0]
-        guild_queue_list[f'{ctx.guild.id}'].pop(0)
-        random.shuffle(guild_queue_list[f'{ctx.guild.id}'])
-        vc.queue.clear()
+        vc.queue.shuffle()
 
-        for song in guild_queue_list[f'{ctx.guild.id}']:
-            vc.queue(song['track'])
-        guild_queue_list[f'{ctx.guild.id}'].insert(0, np_song)
-
-        await auxiliar.send_embed_message(ctx, 'A fila de reprodução foi embaralhada.')
-
-    @commands.command(aliases=['pnext'])
-    async def playnext(self, ctx, *, search: str = None):
-
-        auxiliar = Auxiliar(self.bot)
-        database = Database(self.bot)
-        if search is None:
-            await auxiliar.send_embed_message(ctx, 'Digite o nome de uma música, link do Youtube ou o link do Spotify.')
-            return
-
-        channel_id = database.read_music_channel_id(ctx.guild)
-        if channel_id is None:
-            await auxiliar.send_embed_message(ctx, 'O canal de música não foi configurado. Digite `-configmusic` para '
-                                                   'configurar.')
-            return
-
-        if ctx.author.voice is None:
-            await auxiliar.send_embed_message(ctx, 'Você não está em um canal de voz!')
-            return
-
-        if ctx.voice_client is None:
-            channel = ctx.author.voice.channel
-            vc: wl.Player = await channel.connect(cls=wl.Player, self_deaf=True)
-
-        elif ctx.voice_client.channel.id == ctx.author.voice.channel.id:
-            vc: wl.Player = ctx.voice_client
-
-        else:
-            await auxiliar.send_embed_message(ctx, 'O bot já está sendo utilizado em outro canal.')
-            return
-
-        track = await auxiliar.process_song_search(ctx, search)
-        if not track:
-            return
-
-        if isinstance(track, wl.tracks.YouTubePlaylist):
-            if f'{ctx.guild.id}' not in guild_queue_list:
-                guild_queue_list[f'{ctx.guild.id}'] = []
-
-            if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
-                for song in track.tracks:
-                    info = auxiliar.get_music_info(song)
-                    guild_queue_list[f'{ctx.guild.id}'].append(info)
-                    vc.queue.put(song)
-            else:
-                for song in reversed(track.tracks):
-                    info = auxiliar.get_music_info(song)
-                    guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
-                    vc.queue.put_at_front(song)
-
-            addqueue_embed = auxiliar.create_addqueue_pl_embed(track.name, len(track.tracks), ctx.message.author)
-            await ctx.send(embed=addqueue_embed)
-
-        elif isinstance(track, tuple):
-            if track[0] == 'album':
-                if f'{ctx.guild.id}' not in guild_queue_list:
-                    guild_queue_list[f'{ctx.guild.id}'] = []
-
-                if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
-                    for song in track[1]:
-                        info = auxiliar.get_music_info(song)
-                        guild_queue_list[f'{ctx.guild.id}'].append(info)
-                        vc.queue.put(song)
-                else:
-                    for song in reversed(track[1]):
-                        info = auxiliar.get_music_info(song)
-                        guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
-                        vc.queue.put_at_front(song)
-
-                addqueue_embed = auxiliar.create_addqueue_spotify_album_embed(track[1][0].album, len(track[1]),
-                                                                              ctx.message.author)
-                await ctx.send(embed=addqueue_embed)
-
-            elif track[0] == 'playlist':
-                if f'{ctx.guild.id}' not in guild_queue_list:
-                    guild_queue_list[f'{ctx.guild.id}'] = []
-
-                if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
-                    for song in track[2]:
-                        info = auxiliar.get_music_info(song)
-                        guild_queue_list[f'{ctx.guild.id}'].append(info)
-                        vc.queue.put(song)
-                else:
-                    for song in reversed(track[2]):
-                        info = auxiliar.get_music_info(song)
-                        guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
-                        vc.queue.put_at_front(song)
-
-                addqueue_embed = auxiliar.create_addqueue_spotify_pl_embed(track[1], len(track[2]), ctx.message.author)
-                await ctx.send(embed=addqueue_embed)
-
-        else:
-            info = auxiliar.get_music_info(track)
-
-            if f'{ctx.guild.id}' not in guild_queue_list:
-                guild_queue_list[f'{ctx.guild.id}'] = []
-
-            if len(guild_queue_list[f'{ctx.guild.id}']) in (0, 1) and len(vc.queue) == 0:
-                guild_queue_list[f'{ctx.guild.id}'].append(info)
-                vc.queue.put(track)
-            else:
-                guild_queue_list[f'{ctx.guild.id}'].insert(1, info)
-                vc.queue.put_at_front(track)
-
-            addqueue_embed = auxiliar.create_addqueue_embed(info, ctx.message.author)
-            await ctx.send(embed=addqueue_embed)
-
-        if not vc.is_playing():
-            await vc.play(vc.queue.get())
-
-    @commands.command()
-    async def lyrics(self, ctx):
-
-        auxiliar = Auxiliar(self.bot)
-
-        if ctx.voice_client is None:
-            await auxiliar.send_embed_message(ctx, 'O bot não está em um canal de voz!')
-            return None
-
-        vc: wl.Player = ctx.voice_client
-
-        if not vc.is_playing():
-            await auxiliar.send_embed_message(ctx, "Não tem nada tocando...")
-        else:
-            if isinstance(guild_queue_list[f'{ctx.guild.id}'][0]['track'], spotify.SpotifyTrack):
-
-                lyrics = genius.search_song(title=guild_queue_list[f'{ctx.guild.id}'][0]['name'],
-                                            artist=guild_queue_list[f'{ctx.guild.id}'][0]['artist']).lyrics
-
-                lyrics = auxiliar.clean_lyrics(lyrics)
-
-                await auxiliar.send_embed_lyrics_message(ctx, guild_queue_list[f'{ctx.guild.id}'][0]['title'], lyrics)
-            else:
-                await auxiliar.send_embed_message(ctx, "No momento apenas músicas do Spotify são compatíveis com essa "
-                                                       "função.")
+        await Auxiliar.send_embed_message(ctx, 'A fila de reprodução foi embaralhada.')
 
 
 async def setup(bot):

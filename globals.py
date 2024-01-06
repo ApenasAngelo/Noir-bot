@@ -1,26 +1,4 @@
 import sqlite3
 
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
-
-import lyricsgenius
-
-import os
-from dotenv import load_dotenv
-
 conn = sqlite3.connect('noir_database.sqlite')
 cursor = conn.cursor()
-
-guild_queue_list = {}
-
-last_queue_message = None
-
-
-load_dotenv()
-auth_manager = SpotifyClientCredentials(
-    client_id=os.getenv('spotify.ClientID'),
-    client_secret=os.getenv('spotify.ClientSecret')
-    )
-spotipy = spotipy.Spotify(auth_manager=auth_manager)
-
-genius = lyricsgenius.Genius(os.getenv('genius.TOKEN'))

@@ -20,23 +20,24 @@ O bot é muito experimental no momento, já que eu estou usando-o como um projet
 
 Apesar de ser um projeto bem básico, é necessário que se tenha um conhecimento mínimo de python e das bibliotecas utilizadas. Não tente usar e modificar o código sem entender como elas funcionam, e pedidos de suporte sem o conhecimento das mesmas serão ignorados. Você pode começar estudando um pouco sobre as bibliotecas mais importantes, como a [discord.py](https://github.com/Rapptz/discord.py) e [Wavelink](https://github.com/PythonistaGuild/Wavelink).
 
-## Como baixar
-
-Siga os seguintes passos:
-* Baixe/clone o repositório
-  *Você pode usar `git clone` ou Download zip no botão Code no topo da página
-
 ## Como configurar
 
 Ler o tutorial no repositório do [Wavelink](https://github.com/PythonistaGuild/Wavelink) para criar o node do Lavalink pode ser útil e bem autoexplicativo e fácil de se seguir, mas o repositório já vem com uma pasta pré-pronta para facilitar.
 
-Para facilitar algumas configurações e esconder informações importantes, é utilizado .env para algumas variáveis. Por questão de segurança, ela não é enviada para o repositório, então é necessário que o usuário crie. Para isso criei um arquivo [example.env](https://github.com/ApenasAngelo/Noir-bot/blob/master/example.env) que deve ser renomeado para apenas .env e ter seus valores alterados para que o bot funcione de maneira correta. As explicações de cada uma das variáveis está dentro do próprio `example.env` e é fácil de configurar.
+Para facilitar algumas configurações e esconder informações importantes, eu utilizei .env para algumas variáveis. Por questão de segurança, ela não é enviada para o repositório, então é necessário que o usuário crie. Para isso você pode usar como referência:
+```
+prefix =                            # O prefixo para usar os comandos
 
-Para o resto da configuração, siga os seguintes passos:
-* Substitua no arquivo [application_EXAMPLE.yml](https://github.com/ApenasAngelo/Noir-bot/blob/master/Lavalink/application_EXAMPLE.yml) a mesma senha escolhida no arquivo `.env` no campo password.
-* Renomeie o arquivo `application_EXAMPLE.yml` removendo o _EXAMPLE dele.
-* Crie uma aplicação no [Developer Portal do Discord](https://discord.com/developers/applications)
-* Com o link https://discord.com/oauth2/authorize?&client_id=YOUR_APPLICATION_ID_HERE&scope=bot+applications.commands&permissions=PERMISSIONS, substitua `YOUR_APPLICATION_ID_HERE` e `PERMISSIONS` pelos dados adquiridos no Developer Portal e convide o seu bot para o servidor desejado
+dc.TOKEN =                          # O Token do bot do seu Discord
+MyUserID =                          # O ID do seu usuário. É utilizado para poder desligar o bot dentro do servidor, para degug
+wl.PASSWORD =                       # Senha escolhida para Wavelink
+wl.URI = http://localhost:2333      # A URI, recomendo a padrão do Wavelink
+spotify.ClientID =                  # ClientID do seu app do Spotify Developer
+spotify.ClientSecret =              # ClientSecret do seu app do Spotify Developer
+genius.ClientID=                    # ClientID do seu app do Genius
+genius.ClientSecret=                # ClientSecret do seu app do Genius
+genius.TOKEN=                       # O Token do seu app do Genius
+```
 
 # Como iniciar
 

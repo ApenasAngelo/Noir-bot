@@ -1,5 +1,4 @@
 .env
-Discord bot.code-workspace
 /discord_bot
 /__pycache__
 /Lavalink/application.yml
@@ -8,4 +7,3 @@ noir_database.sqlite
 /cogs/__pycache__
 /Lavalink
 discloud.config
-/.idea

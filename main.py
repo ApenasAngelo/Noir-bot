@@ -6,7 +6,6 @@ from discord.ext import commands
 from cogwatch import watch
 
 import wavelink as wl
-from wavelink.ext import spotify
 
 #INICIALIZAÇÃO DO BOT
 load_dotenv()
@@ -26,13 +25,8 @@ class Bot(commands.Bot):
         print('O bot está ON!'.format(bot))
 
     async def setup_hook(self) -> None:
-        sc = spotify.SpotifyClient(
-            client_id=os.getenv('spotify.ClientID'),
-            client_secret=os.getenv('spotify.ClientSecret')
-        )
-
-        node: wl.Node = wl.Node(uri=os.getenv('wl.URI'), password=os.getenv('wl.PASSWORD'), secure=True)
-        await wl.NodePool.connect(client=self, nodes=[node], spotify=sc)
+        node: list[wl.Node] = [wl.Node(uri=os.getenv('wl.teste'), password=os.getenv('wl.PASSWORD'))]
+        await wl.Pool.connect(client=self, nodes=node, cache_capacity=None)
 
 bot = Bot()
 
