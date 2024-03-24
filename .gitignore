@@ -3,9 +3,9 @@
 /__pycache__
 /Lavalink/application.yml
 /Lavalink/logs
+/Lavalink/plugins
 /noir_database.sqlite
 /cogs/__pycache__
-/Lavalink
 discloud.config
 /avatar.png
 **/.DS_Store
