@@ -13,31 +13,39 @@ class Misc(commands.Cog):
     async def love(self, ctx):
 
         auxiliar = Auxiliar(self.bot)
-        await auxiliar.send_embed_message(ctx, 'Eu te amo! <3')
+        await auxiliar.send_embed_message(ctx, "Eu te amo! <3")
 
-    @commands.command(aliases=['limpar', 'purge'])
+    @commands.command(aliases=["limpar", "purge"])
     async def clear(self, ctx, limit: int = 10):
 
         auxiliar = Auxiliar(self.bot)
         if ctx.author.guild_permissions.administrator:
             if limit < 1:
-                await auxiliar.send_embed_message(ctx, 'Digite um valor válido de mensagens para apagar.')
+                await auxiliar.send_embed_message(
+                    ctx, "Digite um valor válido de mensagens para apagar."
+                )
                 return
 
             deleted = await ctx.channel.purge(limit=(limit + 1))
             if limit == 1:
-                await auxiliar.send_embed_message(ctx, f"{len(deleted) - 1} mensagem foi deletada.", 3)
+                await auxiliar.send_embed_message(
+                    ctx, f"{len(deleted) - 1} mensagem foi deletada.", 3
+                )
             else:
-                await auxiliar.send_embed_message(ctx, f"{len(deleted) - 1} mensagens foram deletadas.", 3)
+                await auxiliar.send_embed_message(
+                    ctx, f"{len(deleted) - 1} mensagens foram deletadas.", 3
+                )
 
-    @commands.command(aliases=['dice', 'dado'])
-    async def roll(self, ctx, user_input: str = '1d2'):
+    @commands.command(aliases=["dice", "dado"])
+    async def roll(self, ctx, user_input: str = "1d2"):
 
         auxiliar = Auxiliar(self.bot)
 
-        match = re.match(r'(?:(\d+)#)?(\d+)d(\d+)([+-]\d+)?', user_input)
+        match = re.match(r"(?:(\d+)#)?(\d+)d(\d+)([+-]\d+)?", user_input)
         if not match:
-            await auxiliar.send_embed_message(ctx, 'Input should be in the format "6#4d6"')
+            await auxiliar.send_embed_message(
+                ctx, 'Input should be in the format "6#4d6"'
+            )
             return
 
         repeat = int(match.group(1)) if match.group(1) else 1
