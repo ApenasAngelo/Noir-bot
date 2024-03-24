@@ -29,7 +29,7 @@ Para facilitar algumas configurações e esconder informações importantes, eu 
 prefix =                            # O prefixo para usar os comandos
 
 dc.TOKEN =                          # O Token do bot do seu Discord
-MyUserID =                          # O ID do seu usuário. É utilizado para poder desligar o bot dentro do servidor, para degug
+MyUserID =                          # O ID do seu usuário. É utilizado para poder desligar o bot dentro do servidor, para debug
 wl.PASSWORD =                       # Senha escolhida para Wavelink
 wl.URI = http://localhost:2333      # A URI, recomendo a padrão do Wavelink
 spotify.ClientID =                  # ClientID do seu app do Spotify Developer
